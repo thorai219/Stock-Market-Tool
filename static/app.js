@@ -1,10 +1,10 @@
-function processForm(evt) {
+function getNewsArticle(evt) {
   evt.preventDefault()
   const symbol = {
-    ticker: $("symbol").val()
+    company: $("search-company").val()
   }
 
-  axios.post("/api/search", symbol)
+  axios.post("/api/search/company/news", symbol)
   .then(function(response) {
     console.log(response) 
     processResponse(response)
@@ -23,4 +23,4 @@ function processResponse(resp) {
 }
 
 
-$("#ticker-search").on("submit", processForm);
+$("#search-news").on("submit", getNewsArticle);

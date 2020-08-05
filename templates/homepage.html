@@ -1,13 +1,22 @@
 {% extends "base.html" %}
 {% block title %}Homepage{% endblock %}
 {% block content %}
-<div>
-  <h2>Get Financial Information</h2>
-  <form id="ticker-search">
-    <div><input type="text" id="symbol"><input type="submit" value="Search"></div>
-  </form>
-</div>
-<ul id="ticker">
 
-</ul>
+  <div class="jumbotron">
+    <div class = "text-center">
+      <h2>Get Financial Information</h2>
+      <p>Search for your favorite company</p>
+      <form class="search-form form-inline col-10 offset-1 col-lg-8 offset-lg-2 div-wrapper d-flex justify-content-center align-items-center">
+        <div class="form-group mx-sm-3 mb-2">
+          <input type="text" class="form-control" id="search-company">
+        </div>
+        <button type="submit" class="search-new btn btn-primary mb-2">Search</button>
+      </form>
+    </div>
+
+  <ul id="ticker">
+
+  </ul>
+
+</div>
 {% endblock %}
