@@ -1,26 +1,36 @@
-function getNewsArticle(evt) {
-  evt.preventDefault()
-  const symbol = {
-    company: $("search-company").val()
-  }
+function processForm(evt) {
+  evt.preventDefault();
 
-  axios.post("/api/search/company/news", symbol)
-  .then(function(response) {
-    console.log(response) 
+  const userInputs = { 
+    name: $("#term").val()
+  }
+  console.log(userInputs)
+  axios.post('/api/search/company/news', userInputs)
+  .then(function (response) {
+    console.log(response)
     processResponse(response)
   })
-  .catch(function(error) {
+  .catch(function (error) {
     console.log(error)
-  })
+  });
+};
+
+function processResponse(res) {
+  const result = res.data
+  $("#result").append(
+    `<div class="card mb-3">
+      <a href="${result.url}">
+        <img src="${result.urlToImage}" class="card-img-top" alt="image for news">
+        <div class="card-body">
+          <h5 class="card-title">${result.title}</h5>
+          <p class="card-text">${result.description}</p>
+          <p class="card-text"><small class="text-muted">${result.publishedAt}</small></p>
+        </div>
+      </a>
+    </div>`
+  )
 }
 
-function processResponse(resp) {
-  for (let data in resp.data) {
-     const li = document.createElement('li');
-     li.val() = data;
-     $("#ticker").append(li);
-  }
-}
 
 
-$("#search-news").on("submit", getNewsArticle);
+$("#search").on("submit", processForm)

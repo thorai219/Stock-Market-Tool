@@ -7,39 +7,60 @@ CURR_USER_KEY = "curr_user"
 app = Flask(__name__)
 
 BASE_API_URL = "https://financialmodelingprep.com/api/v3/"
-
-##############################################################################
-# API calls seperated from view functinos
-
-# def get_company_profile(ticker):
-#     company_profile = requests.get(
-#         f"{BASE_API_URL}/profile/{ticker}?apikey={API_KEY}"
-#         )
-#     company_info = company_profile.json()
-#     info = json.dumps(company_info)
-#     return info
-
-# def get_company_stock(ticker):
-
 newsapi = NewsApiClient(api_key=NEWS_API_KEY)
 
-def get_financial_news(ticker):
-    top_headlines = newsapi.get_top_headlines(
-            q='apple',
-            language='en',
-            country='us'
-            )
-    print(top_headlines)
-    return top_headlines
+connect_db(app):
 
 
 ##############################################################################
-# Homepage
+# API calls seperated from view functions
+
+def get_company_info(name):
+
+    company_news = newsapi.get_top_headlines(
+                    q=f'{name}',
+                    category='business',
+                    language='en',
+                    country='us'
+                    )
+    result = json.dumps(company_news)
+    res = json.loads(result)
+    news = {
+        "title" : res["articles"][0]["title"],
+        "description" : res["articles"][0]["description"],
+        "url" : res["articles"][0]["url"],
+        "urlToImage" : res["articles"][0]["urlToImage"],
+        "publishedAt" : res["articles"][0]["publishedAt"]
+    }
+    return news
+
+def populate_homepage():
+
+    top_headlines = newsapi.get_top_headlines(country='us',category='business')
+    result = json.dumps(top_headlines)
+    data = json.loads(result)
+    news = []
+    for res in data["articles"]:
+        article = {
+        "title" : res["title"],
+        "description" : res["description"],
+        "url" : res["url"],
+        "urlToImage" : res["urlToImage"],
+        "publishedAt" : res["publishedAt"]
+        }
+        news.append(article.copy())
+    print(news)
+    return news
+
+
+##############################################################################
+# Homepage with pre-populated top-headlines
 
 
 @app.route("/")
 def homepage():
-    return render_template("homepage.html")
+
+    return render_template("homepage.html", news=populate_homepage())
 
 
 ##############################################################################
@@ -47,14 +68,13 @@ def homepage():
 
 @app.route("/api/search/company/news", methods=["POST"])
 def search_ticker():
-    req = request.get_json()
-    company_name = req.get("company")
-    top_headlines = newsapi.get_top_headlines(
-            q='apple',
-            language='en',
-            country='us'
-            )
-    return make_response(jsonify(top_headlines)), 200
+
+    response = request.get_json()
+    result = json.dumps(response)
+    res = json.loads(result)
+    name = res["name"]
+
+    return get_company_info(name)
     
 ##############################################################################
 # User signup/login/logout
