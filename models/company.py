@@ -11,11 +11,11 @@ class Company(db.Model):
         db.Integer,
         primary_key=True
         )
-    company_name = db.Column(
+    name = db.Column(
         db.Text,
         nullable=False
         )
-    company_ticker = db.Column(
+    symbol = db.Column(
         db.Text,
         nullable=False
         )
