@@ -1,134 +1,226 @@
-from flask import Flask, render_template, jsonify, request, make_response, session, g
+from flask import Flask, render_template, jsonify, redirect, request, make_response, session, g
 from api import NEWS_API_KEY, STOCK_API_KEY
+from forms import LoginForm, SignUpForm
+from models import Company, Watchlist, User, connect_db
 from newsapi import NewsApiClient
 from urllib.request import urlopen
 from datetime import date, datetime
 from dateutil.relativedelta import relativedelta
-import requests, random, json
+from sqlalchemy.exc import IntegrityError
+import requests, random, json, os
+
 
 CURR_USER_KEY = "curr_user"
 app = Flask(__name__)
 
-STOCK_URL = "https://financialmodelingprep.com/api/v3"
+app.config['SQLALCHEMY_DATABASE_URI'] = (
+    os.environ.get('DATABASE_URL', 'postgres:///stock_market'))
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SQLALCHEMY_ECHO'] = False
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', "1234hello1234")
+connect_db(app)
+
+
+STOCK_API_URL = "https://www.alphavantage.co/query?"
 newsapi = NewsApiClient(api_key=NEWS_API_KEY)
 
 
 ##############################################################################
-# API calls seperated from view functions
+# NEWS API CALL FUNCTIONS
+##############################################################################
 
-# def get_company_info(name):
 
-#     company_news = newsapi.get_top_headlines(
-#                     q=f'{name}',
-#                     category='business',
-#                     language='en',
-#                     country='us'
-#                     )
-#     result = json.dumps(company_news)
-#     res = json.loads(result)
-#     news = {
-#         "title" : res["articles"][0]["title"],
-#         "description" : res["articles"][0]["description"],
-#         "url" : res["articles"][0]["url"],
-#         "urlToImage" : res["articles"][0]["urlToImage"],
-#         "publishedAt" : res["articles"][0]["publishedAt"]
-#     }
-#     return news
+def get_company_news(name):
+    company = get_company_info(name)
+    nname, *inc = company["name"].replace(',',' ').split()
+    print(nname)
+    company_news = newsapi.get_everything(q=f'{nname}',
+                                          language='en',
+                                          )
+    temp = company_news["articles"] 
+    news_list = []
+    for item in temp:
+        news = {
+            "title" : item["title"],
+            "description" : item["description"],
+            "url" : item["url"],
+            "urlToImage" : item["urlToImage"],
+            "publishedAt" : item["publishedAt"]
+        }
+        news_list.append(news)
 
-# def populate_homepage():
-
-#     top_headlines = newsapi.get_top_headlines(country='us',category='business')
-#     result = json.dumps(top_headlines)
-#     data = json.loads(result)
-#     news = []
-#     for res in data["articles"]:
-#         article = {
-#         "title" : res["title"],
-#         "description" : res["description"],
-#         "url" : res["url"],
-#         "urlToImage" : res["urlToImage"],
-#         "publishedAt" : res["publishedAt"]
-#         }
-#         news.append(article.copy())
-    # return news
+    return news_list
 
 
 ##############################################################################
-# Stock api call
+# STOCK DATA API CALL FUNCTIONS
+##############################################################################
 
-def get_jsonparsed_data(url):
 
+def get_company_info(name):
+    url = (f"https://www.alphavantage.co/query?function=OVERVIEW&symbol={name}&apikey={STOCK_API_KEY}")
     response = urlopen(url)
     data = response.read().decode("utf-8")
-    return json.loads(data)
+    info = json.loads(data)
+    company_profile = {
+        "name" : info["Name"],
+        "exchange" : info["Exchange"],
+        "industry" : info["Industry"],
+        "sector" : info["Sector"],
+        "description" : info["Description"]
+    }
+    return company_profile
 
 
+def get_stock_data(name):
+    stock_price_url = (f"https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&outputsize=full&symbol={name}&apikey={STOCK_API_KEY}")
+    response = urlopen(stock_price_url)
+    data = response.read().decode("utf-8")
+    stock_data = json.loads(data)
+    stock_result = []
+    temp_data = stock_data["Time Series (Daily)"]
+
+    for item in temp_data:
+        price_data = {
+            "date" : item,
+            "price" : temp_data[item]["4. close"],
+            "volume": temp_data[item]["5. volume"],
+        }
+        stock_result.append(price_data.copy())
+
+    return stock_result[0:60]
 
 
-##############################################################################
-# Homepage 
-@app.route("/")
-def homepage():
-    return render_template("homepage.html")
+def get_bollinger_band(name):
+
+    response = urlopen(f"{STOCK_API_URL}function=BBANDS&symbol={name}&interval=daily&time_period=20&series_type=close&nbdevup=2&nbdevdn=2&apikey=f{STOCK_API_KEY}")
+    data = response.read().decode("utf-8")
+    data_to_json = json.loads(data)
+    temp_data = data_to_json["Technical Analysis: BBANDS"]
+    bband = []
+
+    for item in temp_data:
+        band_data = {
+            "date" : item,
+            "upper" : temp_data[item]["Real Upper Band"],
+            "lower" : temp_data[item]["Real Lower Band"],
+            "middle" : temp_data[item]["Real Middle Band"]
+        }
+        bband.append(band_data.copy())
+    return bband[0:60]
+
 
 @app.route("/api/stock/chart", methods=["POST"])
-def six_months_chart():
+def send_chart_json_data():
 
     response = request.get_json()
     result = json.dumps(response)
     res = json.loads(result)
     name = res["name"]
 
-    date_today = datetime.date(datetime.now())
-    six_months = date.today() + relativedelta(months=-6)
-
-    url = (
-    f"{STOCK_URL}/historical-price-full/{name}?from={six_months}&to={date_today}&apikey={STOCK_API_KEY}"   
-    )
+    json_response = {}
+    json_response["company"] = get_company_info(name)
+    json_response["stock"] = get_stock_data(name)
+    json_response["bbands"] = get_bollinger_band(name)
+    json_response["news"] = get_company_news(name)
     
-    data = get_jsonparsed_data(url)
-    print(jsonify(data))
-    result = []
+    return make_response(jsonify(json_response),200)
 
-    for item in data["historical"]:
-        price_data = {
-            "date" : item["date"],
-            "price" : item["close"],
-        }
-        result.insert(0, price_data.copy())
-    
-    return make_response(jsonify(result),200)
 
 ##############################################################################
-# Company Profile
-
-# @app.route("/api/search/company/news", methods=["POST"])
-# def search_ticker():
-
-#     response = request.get_json()
-#     result = json.dumps(response)
-#     res = json.loads(result)
-#     name = res["name"]
-
-#     return get_company_info(name)
-    
+# USER PAGES 
 ##############################################################################
-# User signup/login/logout
 
-# @app.before_request
-# def add_user_to_g():
-#     """If we're logged in, add curr user to Flask global."""
-#     if CURR_USER_KEY in session:
-#         g.user = User.query.get(session[CURR_USER_KEY])
-#     else:
-#         g.user = None
 
-# def do_login(user):
-#     """Log in user."""
-#     session[CURR_USER_KEY] = user.id
+@app.before_request
+def add_user_to_g():
 
-# def do_logout():
-#     """Logout user."""
-#     if CURR_USER_KEY in session:
-#         del session[CURR_USER_KEY]
+    if CURR_USER_KEY in session:
+        g.user = User.query.get(session[CURR_USER_KEY])
+    else:
+        g.user = None
+
+def do_login(user):
+
+    session[CURR_USER_KEY] = user.id
+
+def do_logout():
+
+    if CURR_USER_KEY in session:
+        del session[CURR_USER_KEY]
+
+@app.route("/")
+def homepage():
+
+    # if not g.user:
+    #     return redirect("/signup")
+    # else:
+        return render_template("users/user_page.html")
+
+@app.route('/signup', methods=["GET", "POST"])
+def signup():
+
+    if CURR_USER_KEY in session:
+        del session[CURR_USER_KEY]
+    
+    form = SignUpForm()
+
+    if form.validate_on_submit():
+        try:
+            user = User.signup(
+                fullname=form.fullname.data,
+                username=form.username.data,
+                password=form.password.data,
+                email=form.email.data,
+            )
+            db.session.commit()
+
+        except IntegrityError as e:
+            flash('Username taken', "danger")
+            return render_template('users/signup.html', form=form)
+
+        do_login(user)
+
+        return redirect("/")
+
+    else:
+        return render_template('users/signup.html', form=form)
+
+
+@app.route('/login', methods=["GET", "POST"])
+def login():
+
+    form = LoginForm()
+
+    if form.validate_on_submit():
+        user = User.authenticate(form.username.data,
+                                 form.password.data)
+
+        if user:
+            do_login(user)
+            flash(f"Hello, {user.username}!", "success")
+            return redirect("/")
+
+        flash("Invalid credentials.", 'danger')
+
+    return render_template('users/login.html', form=form)
+
+# #############################################################################
+#
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

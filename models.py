@@ -1,9 +1,25 @@
-from flask_bcrypt import Bcrypt
 from flask_sqlalchemy import SQLAlchemy
+from flask_bcrypt import Bcrypt
 
 bcrypt = Bcrypt()
 db = SQLAlchemy()
 
+class Company(db.Model):
+
+    __tablename__ = "companies"
+
+    id = db.Column(
+        db.Integer,
+        primary_key=True
+        )
+    name = db.Column(
+        db.Text,
+        nullable=False
+        )
+    symbol = db.Column(
+        db.Text,
+        nullable=False
+        )
 
 class Watchlist(db.Model):
 
@@ -29,11 +45,7 @@ class User(db.Model):
         db.Integer,
         primary_key=True
         )
-    first_name = db.Column(
-        db.Text,
-        nullable=False
-        )
-    last_name = db.Column(
+    fullname = db.Column(
         db.Text,
         nullable=False
         )
@@ -50,20 +62,14 @@ class User(db.Model):
         nullable=False,
         unique=True
         )
-    following_comapny = db.Relationship(
-        "User",
-        secondary="followed_company",
-        primaryjoin=(Watchlist.following_user_id == id)
-        )
 
     @classmethod
-    def signup(cls, username, email, password, image_url):
+    def signup(cls, fullname, username, email, password):
 
         hashed_pwd = bcrypt.generate_password_hash(password).decode('UTF-8')
 
         user = User(
-            first_name=first_name,
-            last_name=last_name,
+            fullname=fullname,
             username=username,
             email=email,
             password=hashed_pwd,
@@ -88,3 +94,4 @@ def connect_db(app):
 
     db.app = app
     db.init_app(app)
+

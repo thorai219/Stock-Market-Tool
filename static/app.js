@@ -1,84 +1,350 @@
+
 function processForm(evt) {
   evt.preventDefault();
 
-  const userInputs = { 
+  const userInputs = {
     name: $("#search-term").val()
   }
-  console.log(userInputs)
+
   axios.post('/api/stock/chart', userInputs)
   .then(function (response) {
-    makeChart(response)
+    displayLineChart(response)
+    displayVolumeChart(response)
+    appendNews(response)
   })
   .catch(function (error) {
     console.log(error)
   });
 };
 
-function makeChart(res) {
-  const result = res.data
-  var ctx = document.getElementById('chart').getContext('2d');
+function displayLineChart(res) {
+  const result = res.data;
+  var lineChart = document.getElementById('line-chart').getContext('2d');
 
   let date = [];
   let price = [];
+
+  let upperBBand = [];
+  let lowerBBand = [];
+  let midBBand = [];
   
-  try {
-    result.map((item) => {
-      date.push(item.date);
-      price.push(item.price);
-    });
-  
-    var myChart = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: [...date],
-        datasets: [{
-          data: [...price],
-          fill: false,
-          borderColor: ['black'],
-          borderWidth: 1.5
-        }]
+  result.bbands.map((item) => {
+    upperBBand.unshift(item.upper);
+    lowerBBand.unshift(item.lower);
+    midBBand.unshift(item.middle);
+  })
+ 
+  result.stock.map((item) => {
+    date.unshift(item.date);
+    price.unshift(item.price);
+  });
+    var data = {
+      labels: [...date],
+      datasets: [{
+        label: "SMA",
+        fill: false,
+        borderColor: "grey",
+        borderWidth: 0.5,
+        data: [...midBBand]
+      },{
+        label: "BB Upper",
+        fill: false,
+        borderColor: "red",
+        borderWidth: 0.5,
+        data: [...upperBBand]
+      },{
+        label: "BB Lower",
+        fill: false,
+        borderColor: "blue",
+        borderWidth: 0.5,
+        data: [...lowerBBand]
+      },{
+        label: "Price",
+        fill: false,
+        borderColor: ['black'],
+        borderWidth: 2.5,
+        data: [...price],
+      }]
+    };
+    
+    var options = {
+      legend: {
+        display: true,
       },
-      options: {
-        maintainAspectRatio: false,
-        elements: { 
-            point: {
-              radius: 0,
-              hitRadius: 10, 
-              hoverRadius: 3
-              } 
+      title: {
+        display: true,
+        text: result.company.name
+      },
+      maintainAspectRatio: false,
+      elements: { 
+          point: {
+            radius: 0,
+            hitRadius: 10, 
+            hoverRadius: 3
             } 
+      }, 
+      scales: {
+        yAxes: [{
+          // ticks: {
+          //   display: false
+          //   },
+          // gridLines: {
+          //     display: false
+          // }
+          }],
+        xAxes: [{
+          ticks: {
+              display: false
           },
-        scales: {
-          yAxes: [{
-            ticks: {
-              beginAtZero: false
-            }
-          }]
-        }
+        //   gridLines : {
+        //     drawBorder: false,
+        //     display : false
+        // }
+        }]
       }
-    );
+    }
   
-  } catch (error) {
-    console.log(error);
-  }
+    var newChart = new Chart(lineChart, {
+      type: "line",
+      data: data,
+      options: options
+    })
+  
+  $("#desc").append(
+    `
+    <h3 style="margin-left: 20px;">Name: ${result.company.name},
+    Exchange: ${result.company.exchange},    
+    Industry: ${result.company.industry}</h3>
+    `
+  )
+};
+
+function appendNews(res) {
+  const result = res.data.news;
+  result.forEach(item => {
+    if (item.urlToImage === null) {
+      item.urlToImage = "/img/stock_chart.jpg"
+    }
+    else {
+      $("#news").append(
+        `<li class="card m-4 bg-light border-dark">
+          <a href="${item.url}>
+            <div class="card">
+              <div class="row no-gutters">
+                <div class="col-sm-3">
+                    <img src="${item.urlToImage}" class="img-fluid" alt="">
+                </div>
+                <div class="col-sm-9 mt-2">
+                  <div class="card-block px-2">
+                      <h4 class="card-title">${item.title}</h4>
+                      <p class="card-text">${item.description}</p>
+                      <p class="text-muted"><small>${item.publishedAt}</small></p>
+                  </div>
+                </div>
+              </div>
+            </div>  
+          </a>
+        </li>`
+      )
+    }
+  })
 }
 
-// function processResponse(res) {
-//   const result = res.data
-//   $("#result").append(
-//     `<div class="card mb-3">
-//       <a href="${result.url}">
-//         <img src="${result.urlToImage}" class="card-img-top" alt="image for news">
-//         <div class="card-body">
-//           <h5 class="card-title">${result.title}</h5>
-//           <p class="card-text">${result.description}</p>
-//           <p class="card-text"><small class="text-muted">${result.publishedAt}</small></p>
-//         </div>
-//       </a>
-//     </div>`
-//   )
-// }
+function displayVolumeChart(res) {
 
+  const result = res.data
+  let date = [];
+  let volume = [];
+  result.stock.map((item) => {
+    date.unshift(item.date);
+    volume.unshift(item.volume);
+  });
+
+  var volumeChart = document.getElementById('volume-chart').getContext('2d');
+
+  var myChart = new Chart(volumeChart, {
+    type: 'bar',
+    data: 
+    {
+      labels: [...date],
+      datasets: [
+        {
+          label: "Volume",
+          data: [...volume],
+          fill: false,
+          borderColor: ['black'],
+          borderWidth: 2.5
+        },
+      ]
+    },
+      options: {
+      legend: {
+        display: false
+      },   
+      maintainAspectRatio: false,
+      elements: { 
+          point: {
+            radius: 0,
+            hitRadius: 10, 
+            hoverRadius: 3
+            } 
+      }, 
+      scales: {
+        yAxes: [{
+          ticks: {
+            beginAtZero: false,
+            display: false,
+            },
+          gridLines: {
+              display: false,
+          }
+          }],
+        xAxes: [{
+
+        }]
+      }
+    },
+  });
+
+}
+
+  // })
+  // var myChart = new Chart(lineChart, {
+  //   type: 'line',
+  //   data: {
+  //     labels: [...date],
+  //     datasets: [
+  //       {
+  //         label: "Date",
+  //         data: [...price],
+  //         fill: false,
+  //         borderColor: ['black'],
+  //         borderWidth: 1.5
+  //       },
+  //     ]
+  //   },
+  //   options: {    
+  //     title: {
+  //       display: true,
+  //       text: result.company.name
+  //     },
+  //     legend: {
+  //       display: false,
+  //     },
+  //     maintainAspectRatio: false,
+  //     elements: { 
+  //         point: {
+  //           radius: 0,
+  //           hitRadius: 10, 
+  //           hoverRadius: 3
+  //           } 
+  //     }, 
+  //     scales: {
+  //       yAxes: [{
+  //         // ticks: {
+  //         //   display: false
+  //         //   },
+  //         // gridLines: {
+  //         //     display: false
+  //         // }
+  //         }],
+  //       xAxes: [{
+  //         ticks: {
+  //             display: false
+  //         },
+  //       //   gridLines : {
+  //       //     drawBorder: false,
+  //       //     display : false
+  //       // }
+  //       }]
+  //     }
+  //   },
+
+// function displayBBands(res) {
+//   const result = res.data.bbands;
+
+//   let upperBBand = [];
+//   let lowerBBand = [];
+//   let midBBand = [];
+  
+//   result.bbands.map((item) => {
+//     upperBBand.reverse().push(item.upper);
+//     lowerBBand.reverse().push(item.lower);
+//     midBBand.reverse().push(item.middle);
+//   })
+  
+  
+//   var data = {
+//     labels: [...date],
+//     datasets: [{
+//       label: "SMA",
+//       fill: false,
+//       borderColor: "grey",
+//       borderWidth: 0.5,
+//       data: [...midBBand]
+//     },{
+//       label: "BB Upper",
+//       fill: false,
+//       borderColor: "red",
+//       borderWidth: 0.5,
+//       data: [...upperBBand]
+//     },{
+//       label: "BB Lower",
+//       fill: false,
+//       borderColor: "blue",
+//       borderWidth: 0.5,
+//       data: [...lowerBBand]
+//     },{
+//       fill: false,
+//       borderColor: ['black'],
+//       borderWidth: 2.5,
+//       data: [...price],
+//     }]
+//   };
+  
+//   var options = {
+//     title: {
+//       display: true,
+//       text: result.company.name
+//     },
+//     legend: {
+//       display: false,
+//     },
+//     maintainAspectRatio: false,
+//     elements: { 
+//         point: {
+//           radius: 0,
+//           hitRadius: 10, 
+//           hoverRadius: 3
+//           } 
+//     }, 
+//     scales: {
+//       yAxes: [{
+//         ticks: {
+//           display: false
+//           },
+//         gridLines: {
+//             display: false
+//         }
+//         }],
+//       xAxes: [{
+//         ticks: {
+//             display: false
+//         },
+//         gridLines : {
+//           drawBorder: false,
+//           display : false
+//       }
+//       }]
+//     }
+//   }
+  
+//   var newChart = new Chart(lineChart, {
+//     type: "line",
+//     data: data,
+//     options: options
+//   })
+// }
 
 
 $("#search-form").on("submit", processForm)
