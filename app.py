@@ -1,7 +1,8 @@
 from flask import Flask, render_template, jsonify, redirect, request, make_response, session, g
 from api import NEWS_API_KEY, STOCK_API_KEY
+from flask_sqlalchemy import SQLAlchemy
 from forms import LoginForm, SignUpForm
-from models import Company, Watchlist, User, connect_db
+from models import User, connect_db, db
 from newsapi import NewsApiClient
 from urllib.request import urlopen
 from datetime import date, datetime
@@ -13,17 +14,38 @@ import requests, random, json, os
 CURR_USER_KEY = "curr_user"
 app = Flask(__name__)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = (
-    os.environ.get('DATABASE_URL', 'postgres:///stock_market'))
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres:///stock_market'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ECHO'] = False
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', "1234hello1234")
-connect_db(app)
+app.config['SECRET_KEY'] = "1234hello1234"
 
+connect_db(app)
 
 STOCK_API_URL = "https://www.alphavantage.co/query?"
 newsapi = NewsApiClient(api_key=NEWS_API_KEY)
 
+##############################################################################
+# GET ALL TICKER AND NAME
+##############################################################################
+
+def get_all_listed_companies():
+    url = ("https://financialmodelingprep.com/api/v3/stock/list?apikey=fd8c87c3315fc0e7f8d558dd03671495")
+    response = urlopen(url)
+    data = response.read().decode("utf-8")
+    list = json.loads(data)
+
+    # result = []
+
+    # for item in list:
+    #     company = {
+    #         "name" : item["name"],
+    #         "symbol" : item["symbol"],
+    #     }
+    #     result.append(company)
+        # db.session.add(company)
+        # db.session.commit()
+
+    print(list)
 
 ##############################################################################
 # NEWS API CALL FUNCTIONS
@@ -33,7 +55,6 @@ newsapi = NewsApiClient(api_key=NEWS_API_KEY)
 def get_company_news(name):
     company = get_company_info(name)
     nname, *inc = company["name"].replace(',',' ').split()
-    print(nname)
     company_news = newsapi.get_everything(q=f'{nname}',
                                           language='en',
                                           )
@@ -88,40 +109,40 @@ def get_stock_data(name):
         }
         stock_result.append(price_data.copy())
 
-    return stock_result[0:60]
+    return stock_result[0:200]
 
 
-def get_bollinger_band(name):
-
-    response = urlopen(f"{STOCK_API_URL}function=BBANDS&symbol={name}&interval=daily&time_period=20&series_type=close&nbdevup=2&nbdevdn=2&apikey=f{STOCK_API_KEY}")
+def get_sma_(name):
+    sma_price_url = (f"{STOCK_API_URL}function=SMA&symbol={name}&interval=daily&time_period=10&series_type=open&apikey={STOCK_API_KEY}")
+    response = urlopen(sma_price_url)
     data = response.read().decode("utf-8")
-    data_to_json = json.loads(data)
-    temp_data = data_to_json["Technical Analysis: BBANDS"]
-    bband = []
+    sma_data = json.loads(data)
+    sma_result = []
+    temp_data = sma_data["Technical Analysis: SMA"]
 
     for item in temp_data:
-        band_data = {
+        sma_price = {
             "date" : item,
-            "upper" : temp_data[item]["Real Upper Band"],
-            "lower" : temp_data[item]["Real Lower Band"],
-            "middle" : temp_data[item]["Real Middle Band"]
+            "sma" : temp_data[item]["SMA"]
         }
-        bband.append(band_data.copy())
-    return bband[0:60]
+        sma_result.append(sma_price)
 
+    return sma_result[0:200]
 
 @app.route("/api/stock/chart", methods=["POST"])
 def send_chart_json_data():
-
+    
     response = request.get_json()
     result = json.dumps(response)
     res = json.loads(result)
     name = res["name"]
 
+    get_all_listed_companies()
+
     json_response = {}
     json_response["company"] = get_company_info(name)
     json_response["stock"] = get_stock_data(name)
-    json_response["bbands"] = get_bollinger_band(name)
+    json_response["sma"] = get_sma_(name)
     json_response["news"] = get_company_news(name)
     
     return make_response(jsonify(json_response),200)
@@ -176,7 +197,6 @@ def signup():
             db.session.commit()
 
         except IntegrityError as e:
-            flash('Username taken', "danger")
             return render_template('users/signup.html', form=form)
 
         do_login(user)
@@ -193,30 +213,26 @@ def login():
     form = LoginForm()
 
     if form.validate_on_submit():
-        user = User.authenticate(form.username.data,
-                                 form.password.data)
+        try:
+            user = User.authenticate(form.username.data,
+                                    form.password.data)
 
-        if user:
-            do_login(user)
-            flash(f"Hello, {user.username}!", "success")
-            return redirect("/")
+            if user:
+                do_login(user)
 
-        flash("Invalid credentials.", 'danger')
+                return redirect("/")
+
+        except:
+            return redirect("/signup")
+
 
     return render_template('users/login.html', form=form)
 
-# #############################################################################
-#
+# @app.route('/users/<int:user_id>/watchlist')
+# def show_watchlist(user_id):
 
-
-
-
-
-
-
-
-
-
+#     watchlist = Watchlist.query()
+    
 
 
 

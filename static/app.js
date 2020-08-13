@@ -8,6 +8,7 @@ function processForm(evt) {
 
   axios.post('/api/stock/chart', userInputs)
   .then(function (response) {
+    console.log(response)
     displayLineChart(response)
     displayVolumeChart(response)
     appendNews(response)
@@ -23,15 +24,10 @@ function displayLineChart(res) {
 
   let date = [];
   let price = [];
+  let sma = [];
 
-  let upperBBand = [];
-  let lowerBBand = [];
-  let midBBand = [];
-  
-  result.bbands.map((item) => {
-    upperBBand.unshift(item.upper);
-    lowerBBand.unshift(item.lower);
-    midBBand.unshift(item.middle);
+  result.sma.map((item) => {
+    sma.unshift(item.sma)
   })
  
   result.stock.map((item) => {
@@ -41,29 +37,17 @@ function displayLineChart(res) {
     var data = {
       labels: [...date],
       datasets: [{
-        label: "SMA",
-        fill: false,
-        borderColor: "grey",
-        borderWidth: 0.5,
-        data: [...midBBand]
-      },{
-        label: "BB Upper",
-        fill: false,
-        borderColor: "red",
-        borderWidth: 0.5,
-        data: [...upperBBand]
-      },{
-        label: "BB Lower",
-        fill: false,
-        borderColor: "blue",
-        borderWidth: 0.5,
-        data: [...lowerBBand]
-      },{
         label: "Price",
         fill: false,
-        borderColor: ['black'],
+        borderColor: "black",
         borderWidth: 2.5,
         data: [...price],
+      },{
+        label: "SMA",
+        fill: false,
+        borderColor: "blue",
+        borderWidth: 1.5,
+        data: [...sma]
       }]
     };
     
@@ -85,21 +69,12 @@ function displayLineChart(res) {
       }, 
       scales: {
         yAxes: [{
-          // ticks: {
-          //   display: false
-          //   },
-          // gridLines: {
-          //     display: false
-          // }
-          }],
+
+        }],
         xAxes: [{
           ticks: {
               display: false
           },
-        //   gridLines : {
-        //     drawBorder: false,
-        //     display : false
-        // }
         }]
       }
     }
@@ -112,7 +87,7 @@ function displayLineChart(res) {
   
   $("#desc").append(
     `
-    <h3 style="margin-left: 20px;">Name: ${result.company.name},
+    <h3">Name: ${result.company.name},
     Exchange: ${result.company.exchange},    
     Industry: ${result.company.industry}</h3>
     `
@@ -337,7 +312,30 @@ function displayVolumeChart(res) {
 //       }
 //       }]
 //     }
-//   }
+//   }        
+//
+
+
+
+//bollinger bands
+// label: "SMA",
+// fill: false,
+// borderColor: "grey",
+// borderWidth: 0.5,
+// data: [...midBBand]
+// },{
+// label: "BB Upper",
+// fill: false,
+// borderColor: "red",
+// borderWidth: 0.5,
+// data: [...upperBBand]
+// },{
+// label: "BB Lower",
+// fill: false,
+// borderColor: "blue",
+// borderWidth: 0.5,
+// data: [...lowerBBand]
+// },
   
 //   var newChart = new Chart(lineChart, {
 //     type: "line",

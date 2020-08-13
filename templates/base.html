@@ -11,17 +11,15 @@
 
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
       <div class="container">
-        <a class="navbar-brand" href="#">Stock</a>
+        <a class="navbar-brand" href="#">Stock Data</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
-        <form class="form-inline my-2 my-lg-0" id="search-form">
-          <input class="form-control mr-sm-2" id="search-term" placeholder="Search..." aria-label="Search">
-          <input class="btn btn-outline-light my-2 my-sm-0" type="submit" value="submit">
-        </form>
+        {% block search %}
+
+        {% endblock %}
       </div>
     </nav>
-
 
   <div>{% block content %}{% endblock %}</div> 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js"></script>
