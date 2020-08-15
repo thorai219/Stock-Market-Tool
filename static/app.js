@@ -2,13 +2,15 @@
 function processForm(evt) {
   evt.preventDefault();
 
+  $("#news").html('')
+  $("#company-info").html('')
+
   const userInputs = {
     name: $("#search-term").val()
   }
 
   axios.post('/api/stock/chart', userInputs)
   .then(function (response) {
-    console.log(response)
     displayLineChart(response)
     displayVolumeChart(response)
     appendNews(response)
@@ -52,6 +54,7 @@ function displayLineChart(res) {
     };
     
     var options = {
+      responsive: true,
       legend: {
         display: true,
       },

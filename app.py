@@ -1,12 +1,11 @@
 from flask import Flask, render_template, jsonify, redirect, request, make_response, session, g
-from api import NEWS_API_KEY, STOCK_API_KEY
+from api import NEWS_API_KEY, STOCK_API_KEY_1, STOCK_API_KEY_2, STOCK_API_KEY_3
 from flask_sqlalchemy import SQLAlchemy
 from forms import LoginForm, SignUpForm
-from models import User, connect_db, db
+from models import Company, Watchlist, User, connect_db, db
 from newsapi import NewsApiClient
 from urllib.request import urlopen
 from datetime import date, datetime
-from dateutil.relativedelta import relativedelta
 from sqlalchemy.exc import IntegrityError
 import requests, random, json, os
 
@@ -79,7 +78,7 @@ def get_company_news(name):
 
 
 def get_company_info(name):
-    url = (f"https://www.alphavantage.co/query?function=OVERVIEW&symbol={name}&apikey={STOCK_API_KEY}")
+    url = (f"https://www.alphavantage.co/query?function=OVERVIEW&symbol={name}&apikey={STOCK_API_KEY_1}")
     response = urlopen(url)
     data = response.read().decode("utf-8")
     info = json.loads(data)
@@ -94,7 +93,7 @@ def get_company_info(name):
 
 
 def get_stock_data(name):
-    stock_price_url = (f"https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&outputsize=full&symbol={name}&apikey={STOCK_API_KEY}")
+    stock_price_url = (f"https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&outputsize=full&symbol={name}&apikey={STOCK_API_KEY_2}")
     response = urlopen(stock_price_url)
     data = response.read().decode("utf-8")
     stock_data = json.loads(data)
@@ -113,7 +112,7 @@ def get_stock_data(name):
 
 
 def get_sma_(name):
-    sma_price_url = (f"{STOCK_API_URL}function=SMA&symbol={name}&interval=daily&time_period=10&series_type=open&apikey={STOCK_API_KEY}")
+    sma_price_url = (f"{STOCK_API_URL}function=SMA&symbol={name}&interval=daily&time_period=10&series_type=open&apikey={STOCK_API_KEY_3}")
     response = urlopen(sma_price_url)
     data = response.read().decode("utf-8")
     sma_data = json.loads(data)
@@ -136,8 +135,6 @@ def send_chart_json_data():
     result = json.dumps(response)
     res = json.loads(result)
     name = res["name"]
-
-    get_all_listed_companies()
 
     json_response = {}
     json_response["company"] = get_company_info(name)
@@ -173,9 +170,9 @@ def do_logout():
 @app.route("/")
 def homepage():
 
-    # if not g.user:
-    #     return redirect("/signup")
-    # else:
+    if not g.user:
+        return redirect("/signup")
+    else:
         return render_template("users/user_page.html")
 
 @app.route('/signup', methods=["GET", "POST"])
@@ -201,7 +198,7 @@ def signup():
 
         do_login(user)
 
-        return redirect("/")
+        return render_template("user_page.html")
 
     else:
         return render_template('users/signup.html', form=form)
@@ -216,7 +213,6 @@ def login():
         try:
             user = User.authenticate(form.username.data,
                                     form.password.data)
-
             if user:
                 do_login(user)
 
@@ -224,15 +220,9 @@ def login():
 
         except:
             return redirect("/signup")
-
-
+            
     return render_template('users/login.html', form=form)
 
-# @app.route('/users/<int:user_id>/watchlist')
-# def show_watchlist(user_id):
-
-#     watchlist = Watchlist.query()
-    
 
 
 
