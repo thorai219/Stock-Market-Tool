@@ -109,6 +109,7 @@ def get_sma_(name):
 
     return sma_result[0:200]
 
+
 @app.route("/api/stock/chart", methods=["POST"])
 def send_chart_json_data():
     
