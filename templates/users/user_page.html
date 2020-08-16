@@ -3,17 +3,17 @@
 
 {% block search %}
   <form class="form-inline my-2 my-lg-0" id="search-form">
-    <input class="form-control mr-sm-2" id="search-term" placeholder="Search..." aria-label="Search">
-    <input class="btn btn-outline-light my-2 my-sm-0" type="submit" value="submit">
+    <input class="form-control mr-sm-2" id="search-term" aria-label="Search">
+    <input class="btn btn-outline-secondary my-2 my-sm-0" type="submit" value="Search">
   </form>
 {% endblock %}
 
 {% block content %}
-<div class="container" id="company-info">
+<div class="container ml-4 text-center" id="company-info">
   <div id="desc" class="mt-4"></div>
   <div class="column">
     <div class="col-sm-12" style="position: relative; height: 40vh;">
-      <canvas id="line-chart" style="background-color: white;"></canvas>
+      <canvas id="line-chart"></canvas>
     </div> 
     <div class="col-sm-12 ml-1" style="position: relative;">
       <canvas id="volume-chart"></canvas>

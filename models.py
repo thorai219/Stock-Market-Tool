@@ -22,6 +22,16 @@ class Company(db.Model):
         db.Text
     )
 
+    @classmethod
+    def add_to_db(cls, name, symbol, exchange):
+        company = Company(
+            name=name,
+            symbol=symbol,
+            exchange=exchange
+        )
+        db.session.add(company)
+
+
 class Watchlist(db.Model):
 
     __tablename__ = "watchlists"

@@ -1,5 +1,6 @@
 from flask import Flask, render_template, jsonify, redirect, request, make_response, session, g
 from api import NEWS_API_KEY, STOCK_API_KEY_1, STOCK_API_KEY_2, STOCK_API_KEY_3
+from flask_debugtoolbar import DebugToolbarExtension
 from flask_sqlalchemy import SQLAlchemy
 from forms import LoginForm, SignUpForm
 from models import Company, Watchlist, User, connect_db, db
@@ -14,37 +15,17 @@ CURR_USER_KEY = "curr_user"
 app = Flask(__name__)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres:///stock_market'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 app.config['SQLALCHEMY_ECHO'] = False
+app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
 app.config['SECRET_KEY'] = "1234hello1234"
+toolbar = DebugToolbarExtension(app)
 
 connect_db(app)
 
 STOCK_API_URL = "https://www.alphavantage.co/query?"
 newsapi = NewsApiClient(api_key=NEWS_API_KEY)
 
-##############################################################################
-# GET ALL TICKER AND NAME
-##############################################################################
-
-def get_all_listed_companies():
-    url = ("https://financialmodelingprep.com/api/v3/stock/list?apikey=fd8c87c3315fc0e7f8d558dd03671495")
-    response = urlopen(url)
-    data = response.read().decode("utf-8")
-    list = json.loads(data)
-
-    # result = []
-
-    # for item in list:
-    #     company = {
-    #         "name" : item["name"],
-    #         "symbol" : item["symbol"],
-    #     }
-    #     result.append(company)
-        # db.session.add(company)
-        # db.session.commit()
-
-    print(list)
 
 ##############################################################################
 # NEWS API CALL FUNCTIONS
@@ -144,7 +125,6 @@ def send_chart_json_data():
     
     return make_response(jsonify(json_response),200)
 
-
 ##############################################################################
 # USER PAGES 
 ##############################################################################
@@ -198,7 +178,7 @@ def signup():
 
         do_login(user)
 
-        return render_template("user_page.html")
+        return render_template("users/user_page.html")
 
     else:
         return render_template('users/signup.html', form=form)
@@ -208,23 +188,30 @@ def signup():
 def login():
 
     form = LoginForm()
+    if g.user:
+        return redirect('/')
+    else: 
+        if form.validate_on_submit():
+            try:
+                user = User.authenticate(form.username.data,
+                                        form.password.data)
+                if user:
+                    do_login(user)
 
-    if form.validate_on_submit():
-        try:
-            user = User.authenticate(form.username.data,
-                                    form.password.data)
-            if user:
-                do_login(user)
+                    return redirect("/")
 
-                return redirect("/")
+            except:
+                return redirect("/signup")
 
-        except:
-            return redirect("/signup")
-            
     return render_template('users/login.html', form=form)
 
 
+@app.route('/logout')
+def logout():
 
+    do_logout()
+
+    return redirect("/login")
 
 
 
