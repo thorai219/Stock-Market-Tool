@@ -47,7 +47,7 @@ def get_company_news(name):
             "url" : item["url"],
             "urlToImage" : item["urlToImage"],
             "publishedAt" : item["publishedAt"]
-        }
+        };
         news_list.append(news)
 
     return news_list
@@ -89,11 +89,11 @@ def get_stock_data(name):
         }
         stock_result.append(price_data.copy())
 
-    return stock_result[0:200]
+    return stock_result[0:261]
 
 
 def get_sma_(name):
-    sma_price_url = (f"{STOCK_API_URL}function=SMA&symbol={name}&interval=daily&time_period=10&series_type=open&apikey={STOCK_API_KEY_3}")
+    sma_price_url = (f"{STOCK_API_URL}function=SMA&symbol={name}&interval=daily&time_period=20&series_type=open&apikey={STOCK_API_KEY_3}")
     response = urlopen(sma_price_url)
     data = response.read().decode("utf-8")
     sma_data = json.loads(data)
@@ -107,7 +107,7 @@ def get_sma_(name):
         }
         sma_result.append(sma_price)
 
-    return sma_result[0:200]
+    return sma_result[0:261]
 
 
 @app.route("/api/stock/chart", methods=["POST"])
@@ -213,8 +213,4 @@ def logout():
     do_logout()
 
     return redirect("/login")
-
-
-
-
 

@@ -1,7 +1,7 @@
 body {
   margin: 0;
   padding: 0;
-  background-color: gainsboro;
+  background-color: #F2F2F2;
 }
 
 ul {
@@ -16,4 +16,13 @@ a {
 a:hover {
   color: black;
   text-decoration: none;
+}
+
+.sidebar {
+  position: fixed;
+}
+
+#volume-chart{
+  margin-left: -3px;
+  margin-top: -100px;
 }

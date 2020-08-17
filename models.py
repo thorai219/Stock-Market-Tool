@@ -21,6 +21,11 @@ class Company(db.Model):
     exchange = db.Column(
         db.Text
         )
+    
+    def __init__(self,name,symbol,exchange):
+        self.name = name
+        self.symbol = symbol
+        self.exchange = exchange
 
 
 class Watchlist(db.Model):

@@ -14,6 +14,7 @@ function processForm(evt) {
   .catch(function (error) {
     console.log(error)
   });
+
 };
 
 function displayLineChart(res) {
@@ -37,6 +38,7 @@ function displayLineChart(res) {
       datasets: [{
         label: "Price",
         fill: false,
+        lineTension: 0,
         borderColor: "black",
         borderWidth: 2.5,
         data: [...price],
@@ -50,6 +52,11 @@ function displayLineChart(res) {
     };
     
     var options = {
+      elements: {
+        line: {
+            tension: 0
+        }
+      },
       responsive: true,
       legend: {
         display: true,
@@ -68,12 +75,21 @@ function displayLineChart(res) {
       }, 
       scales: {
         yAxes: [{
-
+          ticks: {
+            beginAtZero: false,
+            display: false
+          },
+          gridLines: {
+            display: false,
+          }
         }],
         xAxes: [{
           ticks: {
               display: false
           },
+          gridLines: {
+            display: false,
+          }
         }]
       }
     }
@@ -166,7 +182,7 @@ function displayVolumeChart(res) {
       scales: {
         yAxes: [{
           ticks: {
-            beginAtZero: false,
+            beginAtZero: true,
             display: false,
             },
           gridLines: {
@@ -174,7 +190,12 @@ function displayVolumeChart(res) {
           }
           }],
         xAxes: [{
-
+          ticks: {
+            display: false,
+            },
+          gridLines: {
+              display: false,
+          }
         }]
       }
     },
