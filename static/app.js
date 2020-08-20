@@ -1,208 +1,249 @@
-function processForm(evt) {
-  evt.preventDefault();
+var SEARCHTERM = {}
 
-  const userInputs = {
-    name: $("#search-term").val()
-  }
+$(() => {
+  axios.get("/get/ticker/sector")
+  .then((res) => renderSector(res))
+  .catch((err) => console.log(err)) 
 
-  axios.post('/api/stock/chart', userInputs)
-  .then(function (response) {
-    displayLineChart(response)
-    displayVolumeChart(response)
-    appendNews(response)
-  })
-  .catch(function (error) {
-    console.log(error)
-  });
+  axios.get("/get/index/snp")
+  .then((res) => renderSNPChart(res))
+  .catch((err) => console.log(err))
 
-};
+  axios.get("/get/index/dow")
+  .then((res) => renderDowChart(res))
+  .catch((err) => console.log(err))
 
-function displayLineChart(res) {
-  const result = res.data;
-  var lineChart = document.getElementById('line-chart').getContext('2d');
+  axios.get("/get/index/nasdaq")
+  .then((res) => renderNasdaqChart(res))
+  .catch((err) => console.log(err))
 
-  let date = [];
-  let price = [];
-  let sma = [];
-
-  result.sma.map((item) => {
-    sma.unshift(item.sma)
-  })
-
-  result.stock.map((item) => {
-    date.unshift(item.date);
-    price.unshift(item.price);
-  });
-    var data = {
-      labels: [...date],
-      datasets: [{
-        label: "Price",
-        fill: false,
-        lineTension: 0,
-        borderColor: "black",
-        borderWidth: 2.5,
-        data: [...price],
-      },{
-        label: "SMA",
-        fill: false,
-        borderColor: "blue",
-        borderWidth: 1.5,
-        data: [...sma]
-      }]
-    };
-    
-    var options = {
-      elements: {
-        line: {
-            tension: 0
-        }
-      },
-      responsive: true,
-      legend: {
-        display: true,
-      },
-      title: {
-        display: true,
-        text: result.company.name
-      },
-      maintainAspectRatio: false,
-      elements: { 
-          point: {
-            radius: 0,
-            hitRadius: 10, 
-            hoverRadius: 3
-            } 
-      }, 
-      scales: {
-        yAxes: [{
-          ticks: {
-            beginAtZero: false,
-            display: false
-          },
-          gridLines: {
-            display: false,
-          }
-        }],
-        xAxes: [{
-          ticks: {
-              display: false
-          },
-          gridLines: {
-            display: false,
-          }
-        }]
-      }
+  $("#search-field").autocomplete({
+    source:function(request, response) {
+        $.getJSON("/api/auto/search",{
+            q: request.term,
+        }, function(data) {
+            response(data.matching_results);
+        });
+    },
+    minLength: 2,
+    select: function(event, ui) {
+      SEARCHTERM.name = ui.item.value;
     }
-  
-    var newChart = new Chart(lineChart, {
-      type: "line",
-      data: data,
-      options: options
-    })
-  
-  $("#desc").append(
-    `
-    <h3">Name: ${result.company.name},
-    Exchange: ${result.company.exchange},    
-    Industry: ${result.company.industry}</h3>
-    `
-  )
-};
+  });
+})
 
-function appendNews(res) {
-  const result = res.data.news;
-  result.forEach(item => {
-    if (item.urlToImage === null) {
-      item.urlToImage = "/img/stock_chart.jpg"
-    }
-    else {
-      $("#news").append(
-        `<li class="card mb-4 bg-light border-dark">
-          <a href="${item.url}>
-            <div class="card">
-              <div class="row no-gutters">
-                <div class="col-sm-3">
-                    <img src="${item.urlToImage}" class="img-fluid" alt="">
-                </div>
-                <div class="col-sm-9 mt-2">
-                  <div class="card-block px-2">
-                      <h4 class="card-title">${item.title}</h4>
-                      <p class="card-text">${item.description}</p>
-                      <p class="text-muted"><small>${item.publishedAt}</small></p>
-                  </div>
-                </div>
-              </div>
-            </div>  
-          </a>
-        </li>`
+function renderSector(res) {
+  let data = res.data;
+  data.forEach((item) => {
+    if (item.changesPercentage.indexOf("-") === -1) {
+      $("#sector-deck").append(
+        `<div class="card">
+          <div class="card-body">
+            <p class="card-text" style="color: #00ff00; font-size: 12px;">${item.sector}<br>${item.changesPercentage}</p>
+          </div>  
+        </div>`
+      )
+    } else {
+      $("#sector-deck").append(
+        `<div class="card">
+          <div class="card-body">
+            <p class="card-text" style="color: #e50000; font-size: 12px;">${item.sector}<br>${item.changesPercentage}</p>
+          </div>  
+        </div>`
       )
     }
   })
 }
 
-function displayVolumeChart(res) {
+function renderSNPChart(res) {
+  var today = new Date();
+  var dd = String(today.getDate()).padStart(2, '0');
+  var mm = String(today.getMonth() + 1).padStart(2, '0');
+  var yyyy = today.getFullYear();
 
-  const result = res.data
-  let date = [];
-  let volume = [];
-  result.stock.map((item) => {
-    date.unshift(item.date);
-    volume.unshift(item.volume);
-  });
+  today = `${yyyy}-${mm}-${dd}`;
+  let data = res.data;
 
-  var volumeChart = document.getElementById('volume-chart').getContext('2d');
+  let chart_date = [];
+  let chart_price = [];
 
-  var myChart = new Chart(volumeChart, {
-    type: 'bar',
-    data: 
-    {
-      labels: [...date],
-      datasets: [
-        {
-          label: "Volume",
-          data: [...volume],
-          fill: false,
-          borderColor: ['black'],
-          borderWidth: 2.5
-        },
+  data.forEach((item) => {
+    let date = item.date.slice(0,10);
+    if (date === today) {
+      chart_date.push(item.date)
+      chart_price.push(item.close)
+    }
+  })
+
+  new Chart(document.getElementById("snp-chart"), {
+    type: 'line',
+    data: {
+      labels: chart_date,
+      datasets: [{ 
+          data: chart_price,
+          label: "S&P 500",
+          fill: false
+        }
       ]
     },
-      options: {
-      legend: {
-        display: false
-      },   
-      maintainAspectRatio: false,
-      elements: { 
-          point: {
-            radius: 0,
-            hitRadius: 10, 
-            hoverRadius: 3
-            } 
-      }, 
+    options: {
+      gridLines: {
+        color: "#ce1127"
+      },
       scales: {
-        yAxes: [{
-          ticks: {
-            beginAtZero: true,
-            display: false,
-            },
-          gridLines: {
-              display: false,
-          }
-          }],
         xAxes: [{
-          ticks: {
-            display: false,
-            },
+          display: true,
           gridLines: {
-              display: false,
+            display: false
+          },
+          ticks: {
+            display: false
+          }
+        }],
+        yAxes: [{
+          display: true,
+          gridLines: {
+            display: false
+          },
+          ticks: {
+            display: false
           }
         }]
       }
-    },
+    }
   });
+}
+
+
+function renderDowChart(res) {
+  var today = new Date();
+  var dd = String(today.getDate()).padStart(2, '0');
+  var mm = String(today.getMonth() + 1).padStart(2, '0');
+  var yyyy = today.getFullYear();
+
+  today = `${yyyy}-${mm}-${dd}`;
+  let data = res.data;
+
+  let chart_date = [];
+  let chart_price = [];
+
+  data.forEach((item) => {
+    let date = item.date.slice(0,10);
+    if (date === today) {
+      chart_date.push(item.date)
+      chart_price.push(item.close)
+    }
+  })
+
+  new Chart(document.getElementById("dow-chart"), {
+    type: 'line',
+    data: {
+      labels: chart_date,
+      datasets: [{ 
+          data: chart_price,
+          label: "DOW",
+          fill: false
+        }
+      ]
+    },
+    options: {
+      gridLines: {
+        color: "#ce1127"
+      },
+      scales: {
+        xAxes: [{
+          display: true,
+          gridLines: {
+            display: false
+          },
+          ticks: {
+            display: false
+          }
+        }],
+        yAxes: [{
+          display: true,
+          gridLines: {
+            display: false
+          },
+          ticks: {
+            display: false
+          }
+        }]
+      }
+    }
+  });
+}
+
+
+function renderNasdaqChart(res) {
+  var today = new Date();
+  var dd = String(today.getDate()).padStart(2, '0');
+  var mm = String(today.getMonth() + 1).padStart(2, '0');
+  var yyyy = today.getFullYear();
+
+  today = `${yyyy}-${mm}-${dd}`;
+  let data = res.data;
+  let chart_date = [];
+  let chart_price = [];
+
+  data.forEach((item) => {
+    let date = item.date.slice(0,10);
+    if (date === today) {
+      chart_date.push(item.date)
+      chart_price.push(item.close)
+    }
+  })
+
+  new Chart(document.getElementById("nasdaq-chart"), {
+    type: 'line',
+    data: {
+      labels: chart_date,
+      datasets: [{ 
+          data: chart_price,
+          label: "NASDAQ",
+          fill: false
+        }
+      ]
+    },
+    options: {
+      gridLines: {
+        color: "#ce1127"
+      },
+      scales: {
+        xAxes: [{
+          display: true,
+          gridLines: {
+            display: true
+          },
+          ticks: {
+            display: false
+          }
+        }],
+        yAxes: [{
+          display: true,
+          gridLines: {
+            display: true
+          },
+          ticks: {
+            display: false
+          }
+        }]
+      }
+    }
+  });
+}
+
+function renderChart(evt) {
+  evt.preventDefault();
+
+  axios.get("/api/get/chart")
+  .then((res) => console.log(res))
+  .catch((err) => console.log(err))
 
 }
 
 
-$("#search-form").on("submit", processForm)
+
+$("#search-form").on("submit", renderChart)
+
 

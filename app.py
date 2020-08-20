@@ -1,12 +1,14 @@
 from flask import Flask, render_template, jsonify, redirect, request, make_response, session, g
-from api import NEWS_API_KEY, STOCK_API_KEY_1, STOCK_API_KEY_2, STOCK_API_KEY_3
+from api import NEWS_API_KEY, STOCK_API_KEY
 from flask_debugtoolbar import DebugToolbarExtension
 from flask_sqlalchemy import SQLAlchemy
 from forms import LoginForm, SignUpForm
 from models import Company, Watchlist, User, connect_db, db
 from newsapi import NewsApiClient
 from urllib.request import urlopen
+from urllib import parse
 from datetime import date, datetime
+from sqlalchemy import or_
 from sqlalchemy.exc import IntegrityError
 import requests, random, json, os
 
@@ -23,7 +25,7 @@ toolbar = DebugToolbarExtension(app)
 
 connect_db(app)
 
-STOCK_API_URL = "https://www.alphavantage.co/query?"
+STOCK_API_URL = "https://financialmodelingprep.com/api/v3/"
 newsapi = NewsApiClient(api_key=NEWS_API_KEY)
 
 
@@ -32,99 +34,85 @@ newsapi = NewsApiClient(api_key=NEWS_API_KEY)
 ##############################################################################
 
 
-def get_company_news(name):
-    company = get_company_info(name)
-    nname, *inc = company["name"].replace(',',' ').split()
-    company_news = newsapi.get_everything(q=f'{nname}',
-                                          language='en',
-                                          )
-    temp = company_news["articles"] 
-    news_list = []
-    for item in temp:
-        news = {
-            "title" : item["title"],
-            "description" : item["description"],
-            "url" : item["url"],
-            "urlToImage" : item["urlToImage"],
-            "publishedAt" : item["publishedAt"]
-        };
-        news_list.append(news)
-
-    return news_list
-
-
-##############################################################################
-# STOCK DATA API CALL FUNCTIONS
-##############################################################################
+# def get_company_news(name):
+#     company = get_company_info(name)
+#     nname, *inc = company["name"].replace(',',' ').split()
+#     company_news = newsapi.get_everything(q=f'{nname}',
+#                                           language='en',
+#                                           )
+#     temp = company_news["articles"] 
+#     news_list = []
+#     for item in temp:
+#         news = {
+#             "title" : item["title"],
+#             "description" : item["description"],
+#             "url" : item["url"],
+#             "urlToImage" : item["urlToImage"],
+#             "publishedAt" : item["publishedAt"]
+#         };
+#         news_list.append(news)
+#     return news_list
 
 
-def get_company_info(name):
-    url = (f"https://www.alphavantage.co/query?function=OVERVIEW&symbol={name}&apikey={STOCK_API_KEY_1}")
+# ##############################################################################
+# # STOCK DATA API CALL FUNCTIONS
+# ##############################################################################
+
+def get_jsonparsed_data(url):
+
     response = urlopen(url)
     data = response.read().decode("utf-8")
-    info = json.loads(data)
-    company_profile = {
-        "name" : info["Name"],
-        "exchange" : info["Exchange"],
-        "industry" : info["Industry"],
-        "sector" : info["Sector"],
-        "description" : info["Description"]
-    }
-    return company_profile
+    return json.loads(data)
 
+@app.route("/get/ticker/sector")
+def get_carousel_ticker():
 
-def get_stock_data(name):
-    stock_price_url = (f"https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&outputsize=full&symbol={name}&apikey={STOCK_API_KEY_2}")
-    response = urlopen(stock_price_url)
-    data = response.read().decode("utf-8")
-    stock_data = json.loads(data)
-    stock_result = []
-    temp_data = stock_data["Time Series (Daily)"]
+    url = (f"{STOCK_API_URL}sectors-performance?apikey={STOCK_API_KEY}")
+    data = get_jsonparsed_data(url)
+    return make_response(jsonify(data))
 
-    for item in temp_data:
-        price_data = {
-            "date" : item,
-            "price" : temp_data[item]["4. close"],
-            "volume": temp_data[item]["5. volume"],
-        }
-        stock_result.append(price_data.copy())
+@app.route("/get/index/snp")
+def get_snp():
 
-    return stock_result[0:261]
+    url = (f"{STOCK_API_URL}historical-chart/30min/%5EGSPC?apikey={STOCK_API_KEY}")
+    data = get_jsonparsed_data(url)
+    return make_response(jsonify(data))
 
+@app.route("/get/index/dow")
+def get_dow():
+    url = (f"{STOCK_API_URL}historical-chart/30min/%5EDJI?apikey={STOCK_API_KEY}")
+    data = get_jsonparsed_data(url)
+    return make_response(jsonify(data))
 
-def get_sma_(name):
-    sma_price_url = (f"{STOCK_API_URL}function=SMA&symbol={name}&interval=daily&time_period=20&series_type=open&apikey={STOCK_API_KEY_3}")
-    response = urlopen(sma_price_url)
-    data = response.read().decode("utf-8")
-    sma_data = json.loads(data)
-    sma_result = []
-    temp_data = sma_data["Technical Analysis: SMA"]
+@app.route("/get/index/nasdaq")
+def get_nasdaq():
+    url = (f"{STOCK_API_URL}historical-chart/30min/%5EIXIC?apikey={STOCK_API_KEY}")
+    data = get_jsonparsed_data(url)
+    return make_response(jsonify(data))
 
-    for item in temp_data:
-        sma_price = {
-            "date" : item,
-            "sma" : temp_data[item]["SMA"]
-        }
-        sma_result.append(sma_price)
+@app.route("/api/get/chart")
+def get_chart():
+    data = request.get_json()
+    query = db.session.get_or_404(Company.name == data[0])
+    print(query)
+    # url = (f"{STOCK_API_URL}historical-chart/5min/{term}?apikey={STOCK_API_KEY}")
+    # data = get_jsonparsed_data(url)
+    return make_response(jsonify(data))
 
-    return sma_result[0:261]
+##############################################################################
+# AUTO COMPLETE
+##############################################################################
 
-
-@app.route("/api/stock/chart", methods=["POST"])
-def send_chart_json_data():
-    
-    response = request.get_json()
-    result = json.dumps(response)
-    res = json.loads(result)
-    name = res["name"]
-
-    json_response = {}
-    json_response["company"] = get_company_info(name)
-    json_response["stock"] = get_stock_data(name)
-    json_response["sma"] = get_sma_(name)
-    json_response["news"] = get_company_news(name)
-    
-    return make_response(jsonify(json_response),200)
+@app.route("/api/auto/search")
+def auto_complete_search():
+    term = request.args.get("q")    
+    query = db.session.query(Company.name).filter(or_(
+            Company.name.ilike("%" + str(term) + "%"),
+            Company.name == str(term),
+        )).limit(5)
+    results = [cn[0] for cn in query.all()]
+    print(results)
+    return jsonify(matching_results = results)
 
 ##############################################################################
 # USER PAGES 
@@ -152,9 +140,9 @@ def do_logout():
 def homepage():
 
     if not g.user:
-        return redirect("/signup")
+        return redirect("/login")
     else:
-        return render_template("users/user_page.html")
+        return render_template("users/main.html")
 
 @app.route('/signup', methods=["GET", "POST"])
 def signup():
@@ -179,7 +167,7 @@ def signup():
 
         do_login(user)
 
-        return render_template("users/user_page.html")
+        return render_template("users/homepage.html")
 
     else:
         return render_template('users/signup.html', form=form)
@@ -202,7 +190,7 @@ def login():
                     return redirect("/")
 
             except:
-                return redirect("/signup")
+                return redirect("/login")
 
     return render_template('users/login.html', form=form)
 
@@ -213,4 +201,10 @@ def logout():
     do_logout()
 
     return redirect("/login")
+
+
+
+@app.route("/show/main/page")
+def show_main_page():
+    return render_template("/users/main.html")
 
