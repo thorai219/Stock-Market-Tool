@@ -33,25 +33,35 @@ newsapi = NewsApiClient(api_key=NEWS_API_KEY)
 # NEWS API CALL FUNCTIONS
 ##############################################################################
 
+@app.route("/get/headlines")
+def get_headlines():
+    headlines = newsapi.get_top_headlines(
+        q="business",
+        category="business",
+        country="us"
+    )
+    return headlines
 
-# def get_company_news(name):
-#     company = get_company_info(name)
-#     nname, *inc = company["name"].replace(',',' ').split()
-#     company_news = newsapi.get_everything(q=f'{nname}',
-#                                           language='en',
-#                                           )
-#     temp = company_news["articles"] 
-#     news_list = []
-#     for item in temp:
-#         news = {
-#             "title" : item["title"],
-#             "description" : item["description"],
-#             "url" : item["url"],
-#             "urlToImage" : item["urlToImage"],
-#             "publishedAt" : item["publishedAt"]
-#         };
-#         news_list.append(news)
-#     return news_list
+
+
+def get_company_news(name):
+    company = get_company_info(name)
+    nname, *inc = company["name"].replace(',',' ').split()
+    company_news = newsapi.get_everything(q=f'{nname}',
+                                          language='en',
+                                          )
+    temp = company_news["articles"] 
+    news_list = []
+    for item in temp:
+        news = {
+            "title" : item["title"],
+            "description" : item["description"],
+            "url" : item["url"],
+            "urlToImage" : item["urlToImage"],
+            "publishedAt" : item["publishedAt"]
+        };
+        news_list.append(news)
+    return news_list
 
 
 # ##############################################################################
@@ -178,7 +188,7 @@ def homepage():
     if not g.user:
         return redirect("/login")
     else:
-        return render_template("users/main.html")
+        return render_template("users/homepage.html")
 
 @app.route('/signup', methods=["GET", "POST"])
 def signup():
@@ -240,7 +250,8 @@ def logout():
 
 
 
-@app.route("/show/main/page")
+@app.route("/main")
 def show_main_page():
+    
     return render_template("/users/main.html")
 

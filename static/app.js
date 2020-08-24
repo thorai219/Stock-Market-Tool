@@ -19,6 +19,11 @@ $(() => {
   .then((res) => renderMovers(res))
   .catch((err) => console.log(err))
 
+  axios.get("/get/headlines")
+  .then((res) => renderNews(res))
+  .catch((err) => console.log(err))
+
+
   $("#search-field").autocomplete({
     source: (request, response) => {
         $.getJSON("/api/auto/search",{
@@ -33,7 +38,6 @@ $(() => {
 
 function renderSector(res) {
   let data = res.data;
-  console.log(data)
   data.forEach((item) => {
     if (item.changesPercentage.indexOf("-") === -1) {
       $("#sector-deck").append(
@@ -82,7 +86,9 @@ function renderSNPChart(res) {
       datasets: [{ 
           data: chart_price,
           label: "S&P 500",
-          fill: false
+          fill: true,
+          borderWidth: 1,
+          borderColor: "#000000"
         }
       ]
     },
@@ -150,9 +156,11 @@ function renderDowChart(res) {
       datasets: [{ 
           data: chart_price,
           label: "DOW",
-          fill: false
-        }
-      ]
+          fill: true,
+          borderWidth: 1,
+          borderColor: "#000000"
+      
+      }]
     },
     options: {
       gridLines: {
@@ -217,9 +225,10 @@ function renderNasdaqChart(res) {
       datasets: [{ 
           data: chart_price,
           label: "NASDAQ",
-          fill: false
-        }
-      ]
+          fill: true,
+          borderWidth: 1,
+          borderColor: "#000000"
+      }]
     },
     options: {
       gridLines: {
@@ -259,19 +268,18 @@ function renderNasdaqChart(res) {
 
 function renderMovers(res) {
   let data = res.data
-  console.log(data)
   data.actives.forEach((item) => {
     if (item.companyName !== null) {
       if (item.changesPercentage.indexOf("-") === -1) {
         $("#actives").append(
           `
-          <li style="color: #009a00; font-size: 12px;">${item.companyName} - ${item.changesPercentage}</li>
+          <li style="color: #009a00; font-size: 12px;">${item.companyName} ${item.changesPercentage}</li>
           `
         )
       } else {
         $("#actives").append(
           `
-          <li style="color: #ce1127; font-size: 12px;">${item.companyName} - ${item.changesPercentage}</li>
+          <li style="color: #ce1127; font-size: 12px;">${item.companyName} ${item.changesPercentage}</li>
           `
         )
       }  
@@ -282,13 +290,13 @@ function renderMovers(res) {
       if (item.changesPercentage.indexOf("-") === -1) {
         $("#gainers").append(
           `
-          <li style="color: #009a00; font-size: 12px;">${item.companyName} - ${item.changesPercentage}</li>
+          <li style="color: #009a00; font-size: 12px;">${item.companyName} ${item.changesPercentage}</li>
           `
         )
       } else {
         $("#gainers").append(
           `
-          <li style="color: #ce1127; font-size: 12px;">${item.companyName} - ${item.changesPercentage}</li>
+          <li style="color: #ce1127; font-size: 12px;">${item.companyName} ${item.changesPercentage}</li>
           `
         )
       }  
@@ -299,13 +307,13 @@ function renderMovers(res) {
       if (item.changesPercentage.indexOf("-") === -1) {
         $("#losers").append(
           `
-          <li style="color: #009a00; font-size: 12px;">${item.companyName} - ${item.changesPercentage}</li>
+          <li style="color: #009a00; font-size: 12px;">${item.companyName} ${item.changesPercentage}</li>
           `
         )
       } else {
         $("#losers").append(
           `
-          <li style="color: #ce1127; font-size: 12px;">${item.companyName} - ${item.changesPercentage}</li>
+          <li style="color: #ce1127; font-size: 12px;">${item.companyName} ${item.changesPercentage}</li>
           `
         )
       }  
@@ -313,8 +321,34 @@ function renderMovers(res) {
   })
 }
 
+function renderNews(res) {
+  let data = res.data;
+  console.log(data)
+  data.articles.forEach((item) => {
+    $("#main-news").append(
+      `
+      <a href="${item.url}" id="news-links">
+        <div class="card deck">
+          <div class="row">
+            <div class="col-sm-4">
+              <img src="${item.urlToImage}" class="img-fluid">
+            </div>
+            <div class="col-sm-8" id="desc-card">
+              <h4>${item.title}</h4>
+              <p>${item.description}</p>
+            </div>
+          </div>
+        </div>
+      </a>
+      `
+    )
+  })
+}
+
 function getChartInfo(evt) {
   evt.preventDefault();
+  
+  window.location = "/main";
 
   const userInputs ={
     name: $("#search-field").val()

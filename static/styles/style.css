@@ -12,19 +12,33 @@ body {
 
 
 /* neon red #ce1127 */
+.deck {
+  background-color: white;
+  border: 0.1px solid black;
+  padding: 5px;
+  box-shadow: 1px 1px;
+}
+
+#sector-deck {
+  margin: 3px;
+}
+
+#news-links {
+  text-decoration: none;
+  color: black;
+}
+
+#desc-card {
+  margin-top: 25px;
+}
 
 .card {
-  background-color: #F8F8FF;
   margin: 3px !important;
   border: none !important;
 }
 
 .card-body {
   padding: 0 !important;
-}
-
-#sector-deck {
-  margin: 5px;
 }
 
 .movers{

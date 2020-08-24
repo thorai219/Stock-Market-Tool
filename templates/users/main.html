@@ -1,34 +1,16 @@
-{% extends "users/homepage.html" %}
+{% extends "base.html" %}
 
-{% block main %}
-<div class="container text-center">
-  <div class="row deck">
-    <div class="col-sm-4">
-      <ul class="movers" id="actives">
-        <h3>Actives</h3>
-      </ul>
-    </div>
-    <div class="col-sm-4">
-      <ul class="movers" id="gainers">
-        <h3>Gains</h3>
-      </ul>
-    </div>
-    <div class="col-sm-4">
-      <ul class="movers" id="losers">
-        <h3>Losses</h3>
-      </ul>
+{% block content %}
+  <div class="container">
+    <div id="company-name"></div>
+    <div class="row">
+      <div class="col-sm-8" id="chart-div">
+        <canvas id="main-chart"height="200"></canvas>
+      </div>
+      <div class="col-sm-4" id="company-info">
+  
+      </div>
     </div>
   </div>
-
-  <div id="company-name"></div>
-  <div class="row">
-    <div class="col-sm-8" id="chart-div">
-      <canvas id="main-chart"height="200"></canvas>
-    </div>
-    <div class="col-sm-4" id="company-info">
-
-    </div>
-  </div>
-</div>
 
 {% endblock %}
