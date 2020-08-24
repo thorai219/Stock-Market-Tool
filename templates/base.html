@@ -12,21 +12,33 @@
 </head>
 <body>
 
-
-    <nav class="navbar navbar-custom sticky-top flex-md-nowrap p-0">
-      <div class="container">
-    {% if g.user %}
-
-    </nav>
-  </div>
-  {% else %}
-      <div class="container">
-        <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="/">Stock Charts</a>   
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+      <a class="navbar-brand" href="/">Stock Chart</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      {% if g.user %}
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav mr-auto">
+          <li class="nav-item active">
+            <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/logout">Sign Out</a>
+          </li>
+        </ul>
+        <form class="form-inline my-2 my-lg-0" id="search-form">
+          <input class="form-control mr-sm-2" id="search-field" type="search" placeholder="Search" aria-label="Search">
+          <button class="btn btn-outline-secondary my-2 my-sm-0" id="search-btn" type="submit">Search</button>
+        </form>
       </div>
-    </nav>
-  </div>
-  {% endif %}
-  <div>
+      {% else %}
+      {% endif %}
+    </div>
+  </nav>
+
+
     {% block content %}{% endblock %}
   </div>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js"></script>

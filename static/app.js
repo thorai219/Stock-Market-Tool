@@ -1,5 +1,3 @@
-var SEARCHTERM = {}
-
 $(() => {
   axios.get("/get/ticker/sector")
   .then((res) => renderSector(res))
@@ -17,8 +15,12 @@ $(() => {
   .then((res) => renderNasdaqChart(res))
   .catch((err) => console.log(err))
 
+  axios.get("/get/get/movers")
+  .then((res) => renderMovers(res))
+  .catch((err) => console.log(err))
+
   $("#search-field").autocomplete({
-    source:function(request, response) {
+    source: (request, response) => {
         $.getJSON("/api/auto/search",{
             q: request.term,
         }, function(data) {
@@ -26,20 +28,18 @@ $(() => {
         });
     },
     minLength: 2,
-    select: function(event, ui) {
-      SEARCHTERM.name = ui.item.value;
-    }
   });
 })
 
 function renderSector(res) {
   let data = res.data;
+  console.log(data)
   data.forEach((item) => {
     if (item.changesPercentage.indexOf("-") === -1) {
       $("#sector-deck").append(
         `<div class="card">
           <div class="card-body">
-            <p class="card-text" style="color: #00ff00; font-size: 12px;">${item.sector}<br>${item.changesPercentage}</p>
+            <p class="card-text" style="color: #009a00; font-size: 12px;">${item.sector}<br>${item.changesPercentage}</p>
           </div>  
         </div>`
       )
@@ -70,8 +70,8 @@ function renderSNPChart(res) {
   data.forEach((item) => {
     let date = item.date.slice(0,10);
     if (date === today) {
-      chart_date.push(item.date)
-      chart_price.push(item.close)
+      chart_date.unshift(item.date)
+      chart_price.unshift(item.close)
     }
   })
 
@@ -89,6 +89,14 @@ function renderSNPChart(res) {
     options: {
       gridLines: {
         color: "#ce1127"
+      },
+      elements: {
+        point:{
+            radius: 1
+        },
+        line: {
+          tension: 0
+        }
       },
       scales: {
         xAxes: [{
@@ -130,8 +138,8 @@ function renderDowChart(res) {
   data.forEach((item) => {
     let date = item.date.slice(0,10);
     if (date === today) {
-      chart_date.push(item.date)
-      chart_price.push(item.close)
+      chart_date.unshift(item.date)
+      chart_price.unshift(item.close)
     }
   })
 
@@ -149,6 +157,14 @@ function renderDowChart(res) {
     options: {
       gridLines: {
         color: "#ce1127"
+      },
+      elements: {
+        point:{
+            radius: 1
+        },
+        line: {
+          tension: 0
+        }
       },
       scales: {
         xAxes: [{
@@ -189,8 +205,8 @@ function renderNasdaqChart(res) {
   data.forEach((item) => {
     let date = item.date.slice(0,10);
     if (date === today) {
-      chart_date.push(item.date)
-      chart_price.push(item.close)
+      chart_date.unshift(item.date)
+      chart_price.unshift(item.close)
     }
   })
 
@@ -208,6 +224,151 @@ function renderNasdaqChart(res) {
     options: {
       gridLines: {
         color: "#ce1127"
+      },
+      elements: {
+        point:{
+            radius: 1
+        },
+        line: {
+          tension: 0
+        }
+      },
+      scales: {
+        xAxes: [{
+          display: true,
+          gridLines: {
+            display: false
+          },
+          ticks: {
+            display: false
+          }
+        }],
+        yAxes: [{
+          display: true,
+          gridLines: {
+            display: false
+          },
+          ticks: {
+            display: false
+          }
+        }]
+      }
+    }
+  });
+}
+
+function renderMovers(res) {
+  let data = res.data
+  console.log(data)
+  data.actives.forEach((item) => {
+    if (item.companyName !== null) {
+      if (item.changesPercentage.indexOf("-") === -1) {
+        $("#actives").append(
+          `
+          <li style="color: #009a00; font-size: 12px;">${item.companyName} - ${item.changesPercentage}</li>
+          `
+        )
+      } else {
+        $("#actives").append(
+          `
+          <li style="color: #ce1127; font-size: 12px;">${item.companyName} - ${item.changesPercentage}</li>
+          `
+        )
+      }  
+    }
+  })
+  data.gainers.forEach((item) => {
+    if (item.companyName !== null) {
+      if (item.changesPercentage.indexOf("-") === -1) {
+        $("#gainers").append(
+          `
+          <li style="color: #009a00; font-size: 12px;">${item.companyName} - ${item.changesPercentage}</li>
+          `
+        )
+      } else {
+        $("#gainers").append(
+          `
+          <li style="color: #ce1127; font-size: 12px;">${item.companyName} - ${item.changesPercentage}</li>
+          `
+        )
+      }  
+    }
+  })
+  data.losers.forEach((item) => {
+    if (item.companyName !== null) {
+      if (item.changesPercentage.indexOf("-") === -1) {
+        $("#losers").append(
+          `
+          <li style="color: #009a00; font-size: 12px;">${item.companyName} - ${item.changesPercentage}</li>
+          `
+        )
+      } else {
+        $("#losers").append(
+          `
+          <li style="color: #ce1127; font-size: 12px;">${item.companyName} - ${item.changesPercentage}</li>
+          `
+        )
+      }  
+    }
+  })
+}
+
+function getChartInfo(evt) {
+  evt.preventDefault();
+
+  const userInputs ={
+    name: $("#search-field").val()
+  }
+
+  $("#search-field").val("")
+  $("#company-name").html("")
+  $("#company-info").html("")
+  $("#chart-div").html("<canvas id='main-chart' height='200'></canvas>")
+
+  axios.post("/api/get/chart", userInputs)
+  .then((res) => {
+    renderChart(res)
+    renderInfo(res)
+  })
+  .catch((err) => console.log(err))
+
+}
+
+function renderChart(res) {
+  let data = res.data.chart;
+  let chart_date = [];
+  let chart_price = [];
+
+  data.forEach((item) => {
+    chart_date.unshift(item.date);
+    chart_price.unshift(item.price);
+  })
+
+  let userInput = $("#search-field").val();
+
+  new Chart(document.getElementById("main-chart"), {
+    type: 'line',
+    data: {
+      labels: chart_date,
+      datasets: [{ 
+          data: chart_price,
+          label: userInput,
+          color: "black",
+          fill: true
+        }
+      ]
+    },
+    options: {
+      gridLines: {
+        color: "black"
+      },
+      elements: {
+        point:{
+            radius: 1
+        },
+        line: {
+          tension: 0
+        }
       },
       scales: {
         xAxes: [{
@@ -233,17 +394,34 @@ function renderNasdaqChart(res) {
   });
 }
 
-function renderChart(evt) {
-  evt.preventDefault();
-
-  axios.get("/api/get/chart")
-  .then((res) => console.log(res))
-  .catch((err) => console.log(err))
-
+function renderInfo(res) {
+  let data = res.data.company[0];
+  console.log(data)
+  $("#company-name").append(
+    `
+    <h3>${data.companyName}</h3>
+    `
+  )
+  $("#company-info").append(
+    `
+    <div class="card" style="width: 18rem; height: 200px;">
+    <ul class="list-group list-group-flush">
+      <li class="list-group-item"><img src="${data.image}"></li>
+      <li class="list-group-item">CEO: ${data.ceo}</li>
+      <li class="list-group-item">Symbol: ${data.symbol}</li>
+      <li class="list-group-item">Exchange: ${data.exchangeShortName}</li>
+      <li class="list-group-item">Sector: ${data.sector}</li>
+      <li class="list-group-item">Industry: ${data.industry}</li>
+      <li class="list-group-item">Price: $${data.price}</li>
+      <li class="list-group-item">Changes: ${data.changes}</li>
+    </ul>
+  </div>
+    `
+  )
 }
 
 
 
-$("#search-form").on("submit", renderChart)
+$("#search-form").on("submit", getChartInfo)
 
 

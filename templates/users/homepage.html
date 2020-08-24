@@ -1,7 +1,24 @@
 {% extends "base.html" %}
 {% block content %}
+<!-- <form class="form-inline flex-sm-nowrap" id="search-form">
+  <input id="search-field" class="form-control form-control-dark" type="text" placeholder="Search" aria-label="Search">
+  <input id="search-btn" class="btn btn-outline-secondary my-2 my-sm-0" type="submit" value="Search">
+</form> -->
 
-<div class="sidenav">
+<div class="card-deck text-center" id="sector-deck"></div>
+<div class="container">
+  <div class="row">
+    <div class="snp col-sm-4">
+      <canvas id="snp-chart" height="100"></canvas>
+    </div>  
+    <div class="dow col-sm-4">
+      <canvas id="dow-chart" height="100"></canvas>
+    </div>
+    <div class="nasdaq col-sm-4">
+      <canvas id="nasdaq-chart" height="100"></canvas>
+    </div>
+  </div>
+  <hr>
 </div>
 <div class="main">
   {% block main %}

@@ -90,14 +90,51 @@ def get_nasdaq():
     data = get_jsonparsed_data(url)
     return make_response(jsonify(data))
 
-@app.route("/api/get/chart")
+@app.route("/get/get/movers")
+def get_movers():
+    actives = (f"{STOCK_API_URL}actives?apikey={STOCK_API_KEY}")
+    gainers = (f"{STOCK_API_URL}gainers?apikey={STOCK_API_KEY}") 
+    losers = (f"{STOCK_API_URL}losers?apikey={STOCK_API_KEY}") 
+    result = {}
+    result["actives"] = get_jsonparsed_data(actives)[0:8]
+    result["gainers"] = get_jsonparsed_data(gainers)[0:6]  
+    result["losers"] = get_jsonparsed_data(losers)[0:6]
+
+    return make_response(jsonify(result))
+ 
+
+@app.route("/api/get/chart", methods=["POST"])
 def get_chart():
-    data = request.get_json()
-    query = db.session.get_or_404(Company.name == data[0])
-    print(query)
-    # url = (f"{STOCK_API_URL}historical-chart/5min/{term}?apikey={STOCK_API_KEY}")
-    # data = get_jsonparsed_data(url)
-    return make_response(jsonify(data))
+    search = request.get_json()
+    name = search["name"]
+    query = db.session.query(Company.symbol).filter(or_(
+        Company.name.ilike("%" + name + "%"),
+        Company.name == name,
+    ))
+    symbol = [cn[0] for cn in query.all()]
+    term = str(symbol[0]).strip("[' ']")
+    chart_url = (f"{STOCK_API_URL}historical-chart/5min/{term}?apikey={STOCK_API_KEY}")
+    chart_res = get_jsonparsed_data(chart_url)
+
+    company_url = (f"{STOCK_API_URL}profile/{term}?apikey={STOCK_API_KEY}")
+
+    today_date = date.today()
+    today = today_date.strftime("%Y-%m-%d")
+
+    result = {}
+    result["company"] = get_jsonparsed_data(company_url)
+    chart = []
+
+    for item in chart_res:
+        if item["date"][0:10] == today:
+            chart_data = {
+                "date" : item["date"],
+                "price" : item["close"]
+            }
+            chart.append(chart_data.copy())
+    result["chart"] = chart
+
+    return make_response(jsonify(result))
 
 ##############################################################################
 # AUTO COMPLETE
@@ -111,7 +148,6 @@ def auto_complete_search():
             Company.name == str(term),
         )).limit(5)
     results = [cn[0] for cn in query.all()]
-    print(results)
     return jsonify(matching_results = results)
 
 ##############################################################################
