@@ -327,19 +327,18 @@ function renderNews(res) {
   data.articles.forEach((item) => {
     $("#main-news").append(
       `
-      <a href="${item.url}" id="news-links">
-        <div class="card deck">
-          <div class="row">
-            <div class="col-sm-4">
-              <img src="${item.urlToImage}" class="img-fluid">
-            </div>
-            <div class="col-sm-8" id="desc-card">
-              <h4>${item.title}</h4>
-              <p>${item.description}</p>
-            </div>
+      <div class="card deck">
+        <div class="row">
+          <div class="col-sm-4">
+            <img src="${item.urlToImage}" class="img-fluid">
+          </div>
+          <div class="col-sm-8" id="desc-card">
+            <h4>${item.title}</h4>
+            <p>${item.description}</p>
+            <input type="button" value="Read More..." onclick="window.open('${item.url}')" />
           </div>
         </div>
-      </a>
+      </div>
       `
     )
   })
@@ -347,17 +346,29 @@ function renderNews(res) {
 
 function getChartInfo(evt) {
   evt.preventDefault();
-  
-  window.location = "/main";
-
   const userInputs ={
     name: $("#search-field").val()
   }
 
   $("#search-field").val("")
+  $("#main-news").html(`
+  <div class="container">
+    <div id="company-name"></div>
+    <div class="row">
+      <div class="col-sm-8" id="chart-div">
+        <canvas class="deck" id="main-chart"height="200"></canvas>
+      </div>
+      <div class="col-sm-4" id="company-info">
+
+      </div>
+    </div>
+    <div id="company-news"></div>
+  </div>
+  `)
   $("#company-name").html("")
   $("#company-info").html("")
   $("#chart-div").html("<canvas id='main-chart' height='200'></canvas>")
+
 
   axios.post("/api/get/chart", userInputs)
   .then((res) => {
@@ -366,6 +377,12 @@ function getChartInfo(evt) {
   })
   .catch((err) => console.log(err))
 
+  axios.post("/api/get/news", userInputs)
+  .then((res) => {
+    renderCompanyNews(res)
+
+  })
+  .catch((err) => console.log(err))
 }
 
 function renderChart(res) {
@@ -387,8 +404,9 @@ function renderChart(res) {
       datasets: [{ 
           data: chart_price,
           label: userInput,
-          color: "black",
-          fill: true
+          fill: true,
+          borderWidth: 1,
+          borderColor: "#000000"
         }
       ]
     },
@@ -433,12 +451,12 @@ function renderInfo(res) {
   console.log(data)
   $("#company-name").append(
     `
-    <h3>${data.companyName}</h3>
+    <h3 class="text-center">${data.companyName}</h3>
     `
   )
   $("#company-info").append(
     `
-    <div class="card" style="width: 18rem; height: 200px;">
+    <div class="card text-center" style="width: 18rem; height: 200px;">
     <ul class="list-group list-group-flush">
       <li class="list-group-item"><img src="${data.image}"></li>
       <li class="list-group-item">CEO: ${data.ceo}</li>
@@ -454,6 +472,26 @@ function renderInfo(res) {
   )
 }
 
+function renderCompanyNews(res) {
+  let data = res.data.articles;
+  console.log(data)
+  data.forEach((item) => {
+    $("#company-news").append(`
+      <div class="card deck">
+        <div class="row">
+          <div class="col-sm-4">
+            <img src="${item.urlToImage}" class="img-fluid">
+          </div>
+          <div class="col-sm-8" id="desc-card">
+            <h4>${item.title}</h4>
+            <p>${item.description}</p>
+            <input type="button" value="Read More..." onclick="window.open('${item.url}')" />
+          </div>
+        </div>
+      </div>
+    `)
+  })
+}
 
 
 $("#search-form").on("submit", getChartInfo)

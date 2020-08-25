@@ -42,27 +42,16 @@ def get_headlines():
     )
     return headlines
 
+@app.route("/api/get/news", methods=["POST"])
+def get_news():
+    search = request.get_json()
+    name = search["name"]
 
-
-def get_company_news(name):
-    company = get_company_info(name)
-    nname, *inc = company["name"].replace(',',' ').split()
-    company_news = newsapi.get_everything(q=f'{nname}',
-                                          language='en',
-                                          )
-    temp = company_news["articles"] 
-    news_list = []
-    for item in temp:
-        news = {
-            "title" : item["title"],
-            "description" : item["description"],
-            "url" : item["url"],
-            "urlToImage" : item["urlToImage"],
-            "publishedAt" : item["publishedAt"]
-        };
-        news_list.append(news)
-    return news_list
-
+    news = newsapi.get_everything(
+        q=f"{name}",
+        language="en"
+    )
+    return news
 
 # ##############################################################################
 # # STOCK DATA API CALL FUNCTIONS
@@ -252,6 +241,6 @@ def logout():
 
 @app.route("/main")
 def show_main_page():
-    
+
     return render_template("/users/main.html")
 

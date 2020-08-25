@@ -44,3 +44,7 @@ body {
 .movers{
   list-style-type: none;
 }
+
+#company-news {
+  margin-top: 20px;
+}
