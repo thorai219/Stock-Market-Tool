@@ -16,6 +16,7 @@ app = Flask(__name__)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'postgres:///stock_market')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
+app.config['STOCK_API_KEY'] = os.environ.get('STOCK_API_KEY', STOCK_API_KEY)
 app.config['SQLALCHEMY_ECHO'] = False
 app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'hefedelaspldas1122333fas')
