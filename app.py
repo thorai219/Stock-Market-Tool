@@ -9,7 +9,7 @@ from urllib.request import urlopen
 from datetime import date,datetime, timedelta
 from urllib import parse
 from api import STOCK_API_KEY
-import json, requests
+import json, requests, os
 
 CURR_USER_KEY = "curr_user"
 app = Flask(__name__)
@@ -18,7 +18,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres:///stock_market'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 app.config['SQLALCHEMY_ECHO'] = False
 app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
-app.config['SECRET_KEY'] = "1234hello1234"
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'hefedelaspldas1122333fas')
 toolbar = DebugToolbarExtension(app)
 
 connect_db(app)
