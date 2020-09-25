@@ -4,86 +4,66 @@ from flask_bcrypt import Bcrypt
 bcrypt = Bcrypt()
 db = SQLAlchemy()
 
-class Company(db.Model):
+class Following(db.Model):
 
-    __tablename__ = "companies"
+    __tablename__ = 'following' 
 
     id = db.Column(
         db.Integer,
         primary_key=True
-        )
-    name = db.Column(
-        db.Text
-        )
-    symbol = db.Column(
-        db.Text
-        )
-    exchange = db.Column(
-        db.Text
-        )
-    
-    def __init__(self,name,symbol,exchange):
-        self.name = name
-        self.symbol = symbol
-        self.exchange = exchange
-
-
-class Watchlist(db.Model):
-
-    __tablename__ = "watchlists"
-
-    company_id = db.Column(
-      db.Integer,
-      db.ForeignKey('companies.id', ondelete="cascade"),
-      primary_key=True,
     )
 
-    following_user_id = db.Column(
-        db.Integer,
-        db.ForeignKey('users.id', ondelete="cascade"),
-        primary_key=True,
+    user_id = db.Column(
+        db.Integer
+    )
+
+    company_symbol = db.Column(
+        db.Text
     )
 
 class User(db.Model):
 
-    __tablename__ = "users"
+    __tablename__ = 'users'
 
     id = db.Column(
         db.Integer,
-        primary_key=True
-        )
-    fullname = db.Column(
-        db.Text,
-        nullable=False
-        )
-    username = db.Column(
-        db.Text,
-        nullable=False
-        )
-    password = db.Column(
-        db.Text,
-        nullable=False
-        )
+        primary_key=True,
+    )
+
     email = db.Column(
         db.Text,
         nullable=False,
-        unique=True
-        )
+        unique=True,
+    )
 
-    def __init__(self, fullname, username, password, email):
-        self.fullname = fullname
-        self.username = username
-        self.password = password
-        self.email = email
+    fullname = db.Column(
+        db.Text,
+        nullable=False,
+    )
+
+    username = db.Column(
+        db.Text,
+        nullable=False,
+        unique=True,
+    )
+
+    password = db.Column(
+        db.Text,
+        nullable=False,
+    )
+
+    following = db.Column(
+        db.Text,
+    )
 
     @classmethod
-    def signup(cls, fullname, username, email, password):
+    def signup(cls, username, fullname, email, password):
 
         hashed_pwd = bcrypt.generate_password_hash(password).decode('UTF-8')
 
         user = User(
-            fullname=fullname,
             username=username,
+            fullname=fullname,
             email=email,
             password=hashed_pwd,
         )
@@ -103,6 +83,20 @@ class User(db.Model):
 
         return False
 
+class Company(db.Model):
+
+    __tablename__ = 'companies'
+
+    symbol = db.Column(
+      db.Text,
+      primary_key=True
+    )
+
+    name = db.Column(
+      db.Text
+    )
+
+
 def connect_db(app):
 
     db.app = app
@@ -110,5 +104,9 @@ def connect_db(app):
     db.create_all()
     db.session.commit()
     dir(db)
+
+
+
+
 
 

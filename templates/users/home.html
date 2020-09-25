@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+  <div class="container mt-4" id="chart">
+    <div id="main-info"></div>
+    <div class="container">
+      <div class="row" id="major-index">
+        <div class="snp col-sm-4 deck">
+          <canvas id="snp-chart" height="150"></canvas>
+        </div>  
+        <div class="dow col-sm-4 deck">
+          <canvas id="dow-chart" height="150"></canvas>
+        </div>
+        <div class="nasdaq col-sm-4 deck">
+          <canvas id="nasdaq-chart" height="150"></canvas>
+        </div>
+      </div>
+      <hr>
+    </div>
+    {% for item in news %}
+      <div class="card">
+        <div class="row">
+          <div class="col-sm-4">
+            <img src="{{ item.image }}" class="img-fluid">
+          </div>
+          <div class="col-sm-8" id="desc-card">
+            <h4>{{ item.title }}</h4>
+            <p>{{ item.text }}</p>
+            <small>{{ item.publishedDate }}</small>
+            <input style="width: 150px;" type="button" value="Read More..." onclick="window.open('{{ item.url }}')" />
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% endblock %}

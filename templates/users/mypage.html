@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container profile-page" id="chart">
+  <div class="row">
+    <div class="col-sm-4" id="user-info">
+      <div class="center-div">
+        <div class="user-info">
+          <h3>{{ user.username }}</h3>
+          <p>{{ user.fullname }}</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-6">
+      <div class="container">
+        <ul class="user-following">
+          {% for symbol in following %}
+            <li>
+              <button onclick="get_stock('{{ symbol[0].symbol }}')">
+                <p>{{ symbol[0].symbol }}</p>
+                <p>${{ symbol[0].price }}</p>
+              </button>
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+{% endblock %}
