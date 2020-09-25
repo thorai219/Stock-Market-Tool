@@ -8,6 +8,7 @@ from sqlalchemy.exc import IntegrityError
 from urllib.request import urlopen
 from datetime import date,datetime, timedelta
 from urllib import parse
+from api import STOCK_API_KEY
 import json, requests
 
 CURR_USER_KEY = "curr_user"
@@ -161,14 +162,14 @@ def query_db_for_symbol(term):
 
 def get_quote(symbol):
 
-    url = (f"{STOCK_API_URL}quote-short/{symbol}?apikey=e238829117597ae6045cf06afab65ab5")
+    url = (f"{STOCK_API_URL}quote-short/{symbol}?apikey={STOCK_API_KEY}")
     quote = get_jsonparsed_data(url)
 
     return quote
 
 def get_company_profile(symbol):
 
-    url = (f"{STOCK_API_URL}profile/{symbol}?apikey=e238829117597ae6045cf06afab65ab5")
+    url = (f"{STOCK_API_URL}profile/{symbol}?apikey={STOCK_API_KEY}")
 
     profile = get_jsonparsed_data(url)
 
@@ -194,14 +195,14 @@ def get_todays_data(data):
 
 def get_headline_news():
 
-    news_url = (f"{STOCK_API_URL}stock_news?limit=20&apikey=e238829117597ae6045cf06afab65ab5")
+    news_url = (f"{STOCK_API_URL}stock_news?limit=20&apikey={STOCK_API_KEY}")
     news = get_jsonparsed_data(news_url)
 
     return news
 
 def get_company_news(symbol):
 
-    news_url = (f"{STOCK_API_URL}stock_news?tickers={symbol}&limit=20&apikey=e238829117597ae6045cf06afab65ab5")
+    news_url = (f"{STOCK_API_URL}stock_news?tickers={symbol}&limit=20&apikey={STOCK_API_KEY}")
     news = get_jsonparsed_data(news_url)
 
     return news
@@ -209,9 +210,9 @@ def get_company_news(symbol):
 @app.route("/index")
 def get_index():
 
-    snp_url = (f"{STOCK_API_URL}historical-chart/5min/%5EGSPC?apikey=e238829117597ae6045cf06afab65ab5")
-    dow_url = (f"{STOCK_API_URL}historical-chart/5min/%5EDJI?apikey=e238829117597ae6045cf06afab65ab5")
-    nasdaq_url = (f"{STOCK_API_URL}historical-chart/5min/%5EIXIC?apikey=e238829117597ae6045cf06afab65ab5")
+    snp_url = (f"{STOCK_API_URL}historical-chart/5min/%5EGSPC?apikey={STOCK_API_KEY}")
+    dow_url = (f"{STOCK_API_URL}historical-chart/5min/%5EDJI?apikey={STOCK_API_KEY}")
+    nasdaq_url = (f"{STOCK_API_URL}historical-chart/5min/%5EIXIC?apikey={STOCK_API_KEY}")
 
     snp_res = get_jsonparsed_data(snp_url)
     dow_res = get_jsonparsed_data(dow_url)
@@ -233,7 +234,7 @@ def get_company_info():
     name = req["name"]
     symbol = query_db_for_symbol(name)
 
-    chart_url = (f"{STOCK_API_URL}historical-chart/1min/{symbol}?apikey=e238829117597ae6045cf06afab65ab5")
+    chart_url = (f"{STOCK_API_URL}historical-chart/1min/{symbol}?apikey={STOCK_API_KEY}")
     chart_res = get_jsonparsed_data(chart_url)
 
     data["chart"] = get_todays_data(chart_res)
@@ -258,7 +259,7 @@ def auto_complete_search():
 @app.route("/movers")
 def get_movers():
 
-    actives = (f"{STOCK_API_URL}actives?apikey=e238829117597ae6045cf06afab65ab5")
+    actives = (f"{STOCK_API_URL}actives?apikey={STOCK_API_KEY}")
     result = get_jsonparsed_data(actives)
 
 
@@ -288,7 +289,7 @@ def get_stock():
     symbol = req["symbol"]
     print(symbol)
 
-    chart_url = (f"{STOCK_API_URL}historical-chart/1min/{symbol}?apikey=e238829117597ae6045cf06afab65ab5")
+    chart_url = (f"{STOCK_API_URL}historical-chart/1min/{symbol}?apikey={STOCK_API_KEY}")
     chart_res = get_jsonparsed_data(chart_url)
 
     data["chart"] = get_todays_data(chart_res)
