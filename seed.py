@@ -1,5 +1,5 @@
-from Models import db
+from models import db
 from app import app
 
 db.drop_all()
-db.create_all()
+db.create_all()her
