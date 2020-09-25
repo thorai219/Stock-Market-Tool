@@ -1,4 +1,4 @@
-window.addEventListener("load", function(){
+setTimeout(() => {
   const root = document.documentElement;
   const marqueeElementsDisplayed = getComputedStyle(root).getPropertyValue("--marquee-elements-displayed");
   const marqueeContent = document.querySelector(".marquee-content")
@@ -8,6 +8,4 @@ window.addEventListener("load", function(){
   for (let i = 0; i < marqueeElementsDisplayed; i++) {
     marqueeContent.append(marqueeContent.children[i].cloneNode(true))
   }
-
-});
-
+}, 3000)

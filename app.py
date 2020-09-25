@@ -262,7 +262,6 @@ def get_movers():
     actives = (f"{STOCK_API_URL}actives?apikey={STOCK_API_KEY}")
     result = get_jsonparsed_data(actives)
 
-
     return make_response(jsonify(result))
 
 @app.route("/add/following/<symbol>")
