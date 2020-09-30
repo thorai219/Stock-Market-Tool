@@ -4,77 +4,274 @@ body {
   padding: 0;
   margin: 0;
   box-sizing: border-box;
-  border: none;
-  background-color: #fffafa;
   font-family: 'Montserrat', sans-serif;
 }
 
-.center-div {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
-.user-info {
+.text-center {
+  text-align: center;
+}
+
+.nav-container {
+  margin-top: 2rem;
+}
+
+.nav {
+  display: grid;
+  column-gap: 1rem;
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.nav-items {
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  padding: 0.7rem;
+  text-decoration: none;
+  color: black;
+  text-transform: uppercase;
+  font-size: 20px;
+}
+
+.nav-items:hover {
+  background-color: black;
+  color: lightgrey;
+}
+
+.form {
+  display: grid;
+  gap: 10px;
+  grid-template-rows: 30px;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-areas:
+    'search search search btn';
+  width: 100%;
   margin-top: 50px;
 }
 
-.deck {
-  padding: 20px 0;
+#search {
+  grid-area: search;
 }
 
-.profile-page {
+.button {
+  grid-area: btn;
+  font-size: 18px !important;
+  text-transform: uppercase;
+}
+
+.stock-container {
+  display: grid;
+  grid-gap: 20px;
+  grid-template-rows: 100px 200px 200px 250px;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-areas:
+    'marquee marquee marquee'
+    'chart chart info'
+    'chart chart info'
+    'option option info';
+  height: 700px;
+  text-align: center;
+  margin-top: 25px;
+  margin-bottom: 50px;
+}
+
+.stock-items {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  color: black;
+}
+
+.marquee {
+  grid-area: marquee;
+}
+
+.chart {
+  grid-area: chart;
+}
+
+.options {
+  grid-area: option;
+  display: flex;
+  flex-direction: row;
+}
+
+.options button {
+  width: 200px;
+  height: 50px;
+  margin-top: 20px;
+  background-color: black;
+  border: none;
+  color: white;
+}
+
+.info {
+  grid-area: info;
+  top: 0;
+}
+
+.info p {
+  font-size: 14px;
+}
+
+.follow-btn {
+  width: 100%;
+  border: none;
+  background-color: black;
+  color: white;
+}
+
+.actives {
+  grid-area: actives;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+  background-color: black;
+  border-radius: 10px;
+}
+
+.items {
+  margin-bottom: 1px;
+  font-size: 8px;
+}
+
+.news-container {
+  line-height: 1.5;
+  column-count: 3;
+  margin-top: 150px;
+}
+
+.index-chart {
+  display: grid;
+  column-gap: 10px;
+  row-gap: 10px;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(2, 200px);
+  grid-template-areas: 
+    'snp snp dow'
+    'snp snp nasdaq';
+  margin-top: 25px;
+}
+
+.snp {
+  grid-area: snp;
+  padding: 15px;
+}
+
+.dow {
+  grid-area: dow;
+  padding: 15px;
+}
+
+.nasdaq {
+  grid-area: nasdaq;
+  padding: 15px;
+}
+
+.chart-item {
+  border: 1px solid black;
+}
+
+.news-url {
+  text-decoration: none;
+  color: black;
+  margin-top: 10px;
+}
+
+.news-url:hover {
+  color: black;
+  text-decoration: none;
+}
+
+.news-list {
+  display: flex;
+  justify-content: start;
+  flex-wrap: wrap;
+  margin-top: 20px;
+}
+
+.user-container {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-areas: 
+    'profile following following following';
   margin-top: 100px;
 }
 
-#following-companies {
-  list-style: none;
-  margin: 5px;
-}
-
-#desc-card {
+.user-profile {
+  grid-area: profile;
   display: flex;
   flex-direction: column;
+  text-align: center;
 }
 
-#chart {
-  border: 1px solid black;
-  margin-top: 10px;
-}
-
-#chart-div {
-  margin-top: 10px;
-}
-
-#major-index {
-  border: 1px solid black;
-}
-
-#symbol-list {
-  padding: 15px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-#symbol-list li {
-  margin: 5px;
+.user-profile img {
+  width: 150px;
+  height: 150px;
+  margin: 0 auto;
 }
 
 .user-following {
-  list-style: none;
-  width: 100%;
+  grid-area: following;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
-.user-following li button{
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-content: center;
-  width: 500px;
-  height: 35px;
-  border: none;
-  margin: 10px 0;
+.user-info {
+  margin-top: 10px;
   font-size: 15px;
   font-weight: bold;
+}
+
+.following-list {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.following-items {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  width: 70%;
+  height: 40px;
+  margin-bottom: 15px;
+  background-color: lightgrey;
+  text-decoration: none;
+  color: black;
+  border-radius: 10px;
+  border: none;
+}
+
+.quote {
+  margin-top: 10px;
+}
+
+svg {
+  background-color: black;
+}
+
+ul.ui-autocomplete {
+  list-style: none;
+  background-color: white;
+  color: black !important;
+  -moz-border-radius: 15px;
+  border-radius: 15px;
+  font-size: 16px;
+}
+
+.press {
+  border: 1px solid black;
+  margin-top: 10px;
+}
+
+.press h4, .press p {
+  padding: 12px;
 }

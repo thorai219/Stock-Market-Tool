@@ -2,36 +2,199 @@
 
 {% block content %}
 
-  <div class="container mt-4" id="chart">
-    <div id="main-info"></div>
-    <div class="container">
-      <div class="row" id="major-index">
-        <div class="snp col-sm-4 deck">
-          <canvas id="snp-chart" height="150"></canvas>
-        </div>  
-        <div class="dow col-sm-4 deck">
-          <canvas id="dow-chart" height="150"></canvas>
-        </div>
-        <div class="nasdaq col-sm-4 deck">
-          <canvas id="nasdaq-chart" height="150"></canvas>
-        </div>
-      </div>
-      <hr>
-    </div>
-    {% for item in news %}
-      <div class="card">
-        <div class="row">
-          <div class="col-sm-4">
-            <img src="{{ item.image }}" class="img-fluid">
-          </div>
-          <div class="col-sm-8" id="desc-card">
-            <h4>{{ item.title }}</h4>
-            <p>{{ item.text }}</p>
-            <small>{{ item.publishedDate }}</small>
-            <input style="width: 150px;" type="button" value="Read More..." onclick="window.open('{{ item.url }}')" />
-          </div>
-        </div>
-      </div>
-    {% endfor %}
+<div class="index-chart">
+  <div class="chart-item snp">
+    <canvas id="snp-chart"></canvas>
   </div>
+  <div class="chart-item dow">
+    <canvas id="dow-chart"></canvas>
+  </div>
+  <div class="chart-item nasdaq">
+    <canvas id="nasdaq-chart"></canvas>
+  </div>
+</div>
+
+<div class="news-list">
+  {% for item in news %}
+  <a href="{{ item.url }}" target="blank" class="news-url">
+    <div class="card">
+      <div class="row">
+        <div class="col-sm-4">
+          <img src="{{ item.image }}" class="img-fluid">
+        </div>
+        <div class="col-sm-8">
+          <h4>{{ item.title }}</h4>
+          <p>{{ item.text }}</p>
+          <small>{{ item.publishedDate }}</small>
+        </div>
+      </div>
+    </div>
+  </a>
+{% endfor %}
+</div>
+
+<script>
+
+  document.addEventListener("DOMContentLoaded", () => {
+    axios.get("/snp")
+    .then((res) => renderSNP(res))
+    .catch((err) => console.log(err))
+
+    axios.get("/dow")
+    .then((res) => renderDOW(res))
+    .catch((err) => console.log(err))
+
+    axios.get("/nasdaq")
+    .then((res) => renderNASDAQ(res))
+    .catch((err) => console.log(err))
+  });
+
+  function determineLineColor(data) {
+    let idx = data.length - 1;
+    
+    if (data[0] < data[idx]) {
+      return '#39FF14'
+    } else {
+      return '#fe0002'
+    }
+  }
+
+  let index_chart_options = {
+    elements: {
+      point:{
+          radius: 0
+      },
+      line: {
+        tension: 0
+      }
+    },
+    chartArea: {
+        backgroundColor: 'rgb(0, 0, 0)'
+    },
+    scales: {
+      xAxes: [{
+        display: false,
+        gridLines: {
+          display: true
+        },
+        ticks: {
+          display: false
+        }
+      }],
+      yAxes: [{
+        display: true,
+        gridLines: {
+          display: true
+        },
+        ticks: {
+          display: true
+        }
+      }]
+    }
+  }
+
+  function renderSNP(res) {
+    let data = res.data;
+    let chart_date = [];
+    let chart_price = [];
+
+    data.forEach((item) => {
+      chart_date.unshift(item.date)
+      chart_price.unshift(item.price)
+    })
+
+    let ctx = document.getElementById("snp-chart").getContext("2d");
+
+    var gradientFill = ctx.createLinearGradient(0, 0, 0, 280);
+    gradientFill.addColorStop(0, "black");
+    gradientFill.addColorStop(1, "white"); 
+    
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: chart_date,
+        datasets: [{ 
+            data: chart_price,
+            label: "S&P 500",
+            fill: true,
+            borderWidth: 1,
+            backgroundColor: gradientFill,
+            borderColor: "black",
+          }
+        ]
+      },
+      options: index_chart_options
+    });
+  }
+
+  function renderDOW(res) {
+    let data = res.data;
+
+    let chart_date = [];
+    let chart_price = [];
+
+    data.forEach((item) => {
+      chart_date.unshift(item.date)
+      chart_price.unshift(item.price)
+    })
+
+    let ctx = document.getElementById("dow-chart").getContext("2d");
+
+    var gradientFill = ctx.createLinearGradient(0, 0, 0, 180);
+    gradientFill.addColorStop(0, "black");
+    gradientFill.addColorStop(1, "white"); 
+
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: chart_date,
+        datasets: [{ 
+            data: chart_price,
+            label: "DOW",
+            fill: true,
+            borderWidth: 1,
+            borderColor: "black",
+            backgroundColor: gradientFill
+        }]
+      },
+      options: index_chart_options
+    });
+  }
+
+  function renderNASDAQ(res) {
+    let data = res.data;
+    let chart_date = [];
+    let chart_price = [];
+
+    data.forEach((item) => {
+      chart_date.unshift(item.date)
+      chart_price.unshift(item.price)
+    })
+
+    let ctx = document.getElementById("nasdaq-chart").getContext("2d");
+
+    var gradientFill = ctx.createLinearGradient(0, 0, 0, 180);
+    gradientFill.addColorStop(0, "black");
+    gradientFill.addColorStop(1, "white"); 
+
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: chart_date,
+        datasets: [{ 
+            data: chart_price,
+            label: "NASDAQ",
+            fill: true,
+            borderWidth: 1,
+            borderColor: "black",
+            backgroundColor: gradientFill
+        }]
+      },
+      options: index_chart_options
+    });
+  }
+</script>
+
+
+
 {% endblock %}

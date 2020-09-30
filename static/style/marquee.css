@@ -1,6 +1,6 @@
 :root {
   --marquee-elements: 30;
-  --marquee-width: 100vw;
+  --marquee-width: 100%;
   --marquee-height: 10vh;
   --marquee-elements-displayed: 30;
   --marquee-animation-duration: calc(var(--marquee-elements)*2s); 
@@ -37,11 +37,11 @@
   margin: 5px;
   text-align: center;
   overflow: wrap;
-  font-size: 15px;
   flex-shrink: 0;
-  font-size: 17px;
+  font-size: 25px;
+  font-weight: bold;
   white-space: nowrap;
-  background-color: lightgrey;
+  background-color: black;
   border-radius: 5px;
 }
 

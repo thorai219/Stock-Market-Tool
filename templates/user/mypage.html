@@ -1,32 +1,22 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container profile-page" id="chart">
-  <div class="row">
-    <div class="col-sm-4" id="user-info">
-      <div class="center-div">
-        <div class="user-info">
-          <h3>{{ user.username }}</h3>
-          <p>{{ user.fullname }}</p>
-        </div>
-      </div>
-    </div>
-    <div class="col-sm-6">
-      <div class="container">
-        <ul class="user-following">
-          {% for symbol in following %}
-            <li>
-              <button onclick="get_stock('{{ symbol[0].symbol }}')">
-                <p>{{ symbol[0].symbol }}</p>
-                <p>${{ symbol[0].price }}</p>
-              </button>
-            </li>
-          {% endfor %}
-        </ul>
-      </div>
+<div class="user-container">
+  <div class="user user-profile">
+    <img src="https://via.placeholder.com/150" alt="">
+    <p class="user-info">{{ user.fullname }}</p>
+    <p class="user-info">{{ user.username }}</p>
+  </div>
+  <div class="user user-following">
+    <div class="following-list text-center">
+      {% for company in following %}
+        <button class="following-items">
+          <p class="quote">{{ company[0].symbol }}</p>
+          <p class="quote">${{ company[0].price }}</p>
+        </button>
+      {% endfor %}
     </div>
   </div>
 </div>
-
 
 {% endblock %}
