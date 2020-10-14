@@ -16,5 +16,3 @@ Chart js | Bcrypt | WTForms | Postgres | SQLAlchemy | <br>
 ### API used
 
 Financialmodelingprep
-
-### 

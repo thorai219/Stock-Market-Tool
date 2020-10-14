@@ -210,33 +210,11 @@ body {
   margin-top: 20px;
 }
 
-.user-container {
-  display: grid;
-  gap: 10px;
-  grid-template-columns: repeat(4, 1fr);
-  grid-template-areas: 
-    'profile following following following';
-  margin-top: 100px;
-}
-
-.user-profile {
-  grid-area: profile;
-  display: flex;
-  flex-direction: column;
-  text-align: center;
-}
-
-.user-profile img {
-  width: 150px;
-  height: 150px;
-  margin: 0 auto;
-}
-
 .user-following {
-  grid-area: following;
   display: flex;
   flex-direction: column;
   justify-content: center;
+  margin-top: 100px;
 }
 
 .user-info {

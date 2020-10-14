@@ -111,6 +111,9 @@ def logout():
 
 @app.route('/news')
 def show_news():
+    
+    if not g.user:
+        return redirect('/')
 
     news = get_headline_news()
 
@@ -293,11 +296,17 @@ def homepage():
 
 @app.route("/stock")
 def stock():
+
+    if not g.user:
+        return redirect("/login")
   
     return render_template("/user/stock.html")
 
 @app.route("/mypage")
 def mypage():
+
+    if not g.user:
+        return redirect("/login")
 
     query = db.session.query(Following.company_symbol).filter(
         Following.user_id == g.user.id
@@ -309,5 +318,5 @@ def mypage():
     for symbol in following:
         result.append(get_quote(symbol))
 
-    return render_template("/user/mypage.html", user=g.user, following=result)
+    return render_template("/user/mypage.html", following=result)
 

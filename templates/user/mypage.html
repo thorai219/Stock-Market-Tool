@@ -2,11 +2,6 @@
 
 {% block content %}
 <div class="user-container">
-  <div class="user user-profile">
-    <img src="https://via.placeholder.com/150" alt="">
-    <p class="user-info">{{ user.fullname }}</p>
-    <p class="user-info">{{ user.username }}</p>
-  </div>
   <div class="user user-following">
     <div class="following-list text-center">
       {% for company in following %}
