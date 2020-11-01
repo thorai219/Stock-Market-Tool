@@ -36,9 +36,7 @@ body {
 }
 
 .nav-bar li a:hover {
-  color: #f8f8ff;
-  background-color: #123456;
-  border-radius: 5px;
+  text-decoration: underline;
 }
 
 .search-bar {
@@ -223,6 +221,34 @@ body {
 .gainers-table {
   width: 1200px;
   margin: 0 auto;
+}
+
+.company-container {
+  width: 1200px;
+  margin: 30px auto;
+}
+
+.company-info {
+  margin-left: 15px;
+}
+
+.company-description {
+  margin-top: 25px;
+}
+
+.flex-row {
+  display: flex;
+  flex-direction: row;
+}
+
+.profile-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.table-custom {
+  width: 350px;
 }
 
 ul.ui-autocomplete {

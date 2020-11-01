@@ -1,9 +1,9 @@
 :root {
   --marquee-elements: 30;
   --marquee-width: 100%;
-  --marquee-height: 10vh;
+  --marquee-height: 5vh;
   --marquee-elements-displayed: 30;
-  --marquee-animation-duration: calc(var(--marquee-elements)*2s); 
+  --marquee-animation-duration: calc(var(--marquee-elements)*3s);
 }
 
 .marquee {
@@ -11,6 +11,10 @@
   height: var(--marquee-height);
   overflow: hidden;
   position: relative;
+  background-color: #ffffff;
+  -webkit-box-shadow: 0 8px 6px -6px black;
+  -moz-box-shadow: 0 8px 6px -6px black;
+  box-shadow: 0 8px 6px -6px black;
 }
 
 .marquee-content {
@@ -21,8 +25,13 @@
 }
 
 @keyframes scrolling {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-160%); }
+  0% {
+    transform: translateX(0);
+  }
+
+  100% {
+    transform: translateX(-160%);
+  }
 }
 
 .marquee-content:hover {
@@ -33,20 +42,20 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 10vw;
-  margin: 5px;
+  margin-right: 5px;
+  padding: 15px;
   text-align: center;
   overflow: wrap;
   flex-shrink: 0;
-  font-size: 25px;
-  font-weight: bold;
+  font-size: 15px;
   white-space: nowrap;
-  background-color: black;
-  border-radius: 5px;
 }
 
 @media (max-width: 600px) {
-  html { font-size: 12px; }
+  html {
+    font-size: 12px;
+  }
+
   :root {
     --marquee-width: 100vw;
     --marquee-height: 7vh;
@@ -54,7 +63,6 @@
   }
 
   .marquee-content li {
-    width: 25vw;
     margin-left: 20px;
   }
 }

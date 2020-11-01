@@ -107,8 +107,8 @@
       {% for gainer in gainers %}
       <div class="movers-info">
         <p class="movers-item">{{ gainer.ticker }}</p>
-        <p class="movers-gainers">{{ gainer.changesPercentage }}</p>
         <p class="movers-item">{{ gainer.price }}</p>
+        <p class="movers-gainers">{{ gainer.changesPercentage }}</p>
       </div>
       {% endfor %}
       <a href='/movers/gainers' class="movers-action">See more...</a>
@@ -119,8 +119,8 @@
       {% for loser in losers %}
       <div class="movers-info">
         <p class="movers-item">{{ loser.ticker }}</p>
-        <p class="movers-losers">{{ loser.changesPercentage }}</p>
         <p class="movers-item">{{ loser.price }}</p>
+        <p class="movers-losers">{{ loser.changesPercentage }}</p>
       </div>
       {% endfor %}
       <a href='/movers/losers' class="movers-action">See more...</a>

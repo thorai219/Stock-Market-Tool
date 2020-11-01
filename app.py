@@ -59,24 +59,23 @@ def get_jsonparsed_data(url):
     data = response.read().decode("utf-8")
     return json.loads(data)
 
-def get_todays_data(data):
+def get_labels(data):
 
-    chart = []
+    label = []
 
-    todays_date = date.today()
-    today = todays_date.strftime("%Y-%m-%d")
-    yesterday = date.today() - timedelta(days = 1)
-    
     for item in data:
-        time = item["date"][0:10]
-        if time == today:
-            chart_data = {
-                "date" : item["date"],
-                "price" : item["close"]
-            }
-            chart.append(chart_data.copy())
+        label.append(item["date"])
 
-    return chart
+    return label
+
+def get_prices(data):
+
+    price = []
+
+    for item in data:
+        price.append(item["close"])
+
+    return price
 
 def query_db_for_symbol(term):
 
@@ -122,10 +121,23 @@ def get_losers():
 def get_company_profile(symbol):
 
     url = (f"{STOCK_API_URL}profile/{symbol}?apikey={STOCK_API_KEY}")
-
     profile = get_jsonparsed_data(url)
 
     return profile
+
+def get_company_financials(symbol):
+
+    url = (f"{STOCK_API_URL}income-statement/{symbol}?limit=1&apikey={STOCK_API_KEY}")
+    financials = get_jsonparsed_data(url)
+
+    return financials
+
+def get_company_rating(symbol):
+
+    url = (f"{STOCK_API_URL}grade/{symbol}?limit=7&apikey={STOCK_API_KEY}")
+    rating = get_jsonparsed_data(url)
+
+    return rating
 
 def snp():
 
@@ -175,24 +187,33 @@ def auto_complete_search():
                 Company.name == str(term),
             )).limit(5)
     results = [cn[0] for cn in query.all()]
-    print(results)
+
     return jsonify(matching_results = results)
 
-@app.route("/search/company", methods=["POST"])
+@app.route("/search/ticker", methods=["POST"])
 def get_company_info():
 
-    data = {}
-    req = request.get_json()
-    name = req["name"]
-    symbol = query_db_for_symbol(name)
+    symbol = request.form["search"]
+    ticker = query_db_for_symbol(symbol)
+    print(ticker)
 
-    chart_url = (f"{STOCK_API_URL}historical-chart/1min/{symbol}?apikey={STOCK_API_KEY}")
+    chart_url = (f"{STOCK_API_URL}historical-chart/1min/{ticker}?apikey={STOCK_API_KEY}")
     chart = get_jsonparsed_data(chart_url)
 
-    data["chart"] = chart
-    data["profile"] = get_company_profile(symbol)
+    labels = json.dumps(get_labels(chart))
+    prices = json.dumps(get_prices(chart))
+  
 
-    return make_response(jsonify(data))
+    return render_template(
+        'user/chart.html',
+        labels=labels,
+        prices=prices,
+        profile=get_company_profile(ticker) ,
+        financials=get_company_financials(ticker),
+        rating=get_company_rating(ticker)
+    )
+    
+    # return make_response(jsonify(data))
 
 #########################################
 # USER SIGNUP/LOGIN
