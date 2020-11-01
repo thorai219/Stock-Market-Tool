@@ -1,18 +1,23 @@
-# Stock-Market-Tool
+<h1 align="center">Oyster</h1>
+<div align="center">
+  ## Overview
 
-### Link:
+  - Conveniently get access to information about a particular company
+  - Historical charts: visual representation allows for easier identification of common and rare price patterns.
+  - Charts are the best way to illustrate recurrence of price patterns.
 
-https://stockchartandnews.herokuapp.com/news
+  <hr>
+  ![screenshot](/img/Oyster.png)
+  - chart screenshots coming soon!
+  <a href="https://stockchartandnews.herokuapp.com/news" target="_blank">Working Demo</a>
 
-**simple website with user sign-up/log-in**<br>
-**user is able to follow a company and get stock charts** <br>
-**get company news/financial info**
+  <hr>
+  
+  ## Built With
 
-### Languages used
+  - [Python](https://www.python.org/)
+  - [PostGres](https://www.postgresql.org/)
 
-Python | Flask | Jquery | Javascript | Axios |<br>
-Chart js | Bcrypt | WTForms | Postgres | SQLAlchemy | <br>
-
-### API used
-
-Financialmodelingprep
+  Flask | Jquery | Javascript | Axios | Chart.js | Bcrypt | WTForms | SQLAlchemy
+  <hr>
+</div>
