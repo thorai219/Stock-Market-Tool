@@ -7,7 +7,7 @@
   - Charts are the best way to illustrate recurrence of price patterns.
 
   <hr>
-  ![screenshot](/img/Oyster.png)
+  ![screenshot](https://github.com/thorai219/Stock-Market-Tool/blob/media/Oyster.png)
   - chart screenshots coming soon!
   <a href="https://stockchartandnews.herokuapp.com/news" target="_blank">Working Demo</a>
 
