@@ -49,16 +49,158 @@ def do_logout():
     if CURR_USER_KEY in session:
         del session[CURR_USER_KEY]
 
-#################### 
-# USER INTERACTION
-####################
+
+#########################################
+# API FUNCTIONS
+
+def get_jsonparsed_data(url):
+
+    response = urlopen(url)
+    data = response.read().decode("utf-8")
+    return json.loads(data)
+
+def get_todays_data(data):
+
+    chart = []
+
+    todays_date = date.today()
+    today = todays_date.strftime("%Y-%m-%d")
+    yesterday = date.today() - timedelta(days = 1)
+    
+    for item in data:
+        time = item["date"][0:10]
+        if time == today:
+            chart_data = {
+                "date" : item["date"],
+                "price" : item["close"]
+            }
+            chart.append(chart_data.copy())
+
+    return chart
+
+def query_db_for_symbol(term):
+
+    query = db.session.query(Company.symbol).filter(or_(
+        Company.name.ilike("%" + term + "%"),
+        Company.name == term,
+        Company.symbol == term
+    ))
+
+    res = [cn[0] for cn in query.all()]
+    symbol = str(res[0]).strip("[' ']")
+
+    return symbol
+
+def get_movers():
+
+    actives_url = (f"{STOCK_API_URL}actives?apikey={STOCK_API_KEY}")
+    movers = get_jsonparsed_data(actives_url)
+
+    return movers
+
+def get_headline_news():
+
+    news_url = (f"{STOCK_API_URL}stock_news?limit=20&apikey={STOCK_API_KEY}")
+    news = get_jsonparsed_data(news_url)
+
+    return news
+
+def get_gainers():
+
+    gainers_url = (f"{STOCK_API_URL}gainers?apikey={STOCK_API_KEY}")
+    gainers = get_jsonparsed_data(gainers_url)
+
+    return gainers
+
+def get_losers():
+
+    losers_url = (f"{STOCK_API_URL}losers?apikey={STOCK_API_KEY}")
+    losers = get_jsonparsed_data(losers_url)
+
+    return losers
+
+def get_company_profile(symbol):
+
+    url = (f"{STOCK_API_URL}profile/{symbol}?apikey={STOCK_API_KEY}")
+
+    profile = get_jsonparsed_data(url)
+
+    return profile
+
+def snp():
+
+    snp_url = (f"{STOCK_API_URL}quote/%5EGSPC?apikey={STOCK_API_KEY}")
+    snp = get_jsonparsed_data(snp_url)
+
+    snp_obj = {}
+    snp_obj['changesPercentage'] = str(snp[0]['changesPercentage'])
+    snp_obj['name'] = snp[0]['name']
+    snp_obj['price'] = snp[0]['price']
+    snp_obj['change'] = str(snp[0]['change'])
+
+    return snp_obj
+
+def dow():
+
+    dow_url = (f"{STOCK_API_URL}quote/%5EDJI?apikey={STOCK_API_KEY}")
+    dow = get_jsonparsed_data(dow_url)
+
+    dow_obj = {}
+    dow_obj['changesPercentage'] = str(dow[0]['changesPercentage'])
+    dow_obj['name'] = dow[0]['name']
+    dow_obj['price'] = dow[0]['price']
+    dow_obj['change'] = str(dow[0]['change'])
+
+    return dow_obj
+
+def nasdaq():
+
+    nasdaq_url = (f"{STOCK_API_URL}quote/%5EIXIC?apikey={STOCK_API_KEY}")
+    nasdaq = get_jsonparsed_data(nasdaq_url)
+
+    nasdaq_obj = {}
+    nasdaq_obj['changesPercentage'] = str(nasdaq[0]['changesPercentage'])
+    nasdaq_obj['name'] = nasdaq[0]['name']
+    nasdaq_obj['price'] = nasdaq[0]['price']
+    nasdaq_obj['change'] = str(nasdaq[0]['change'])
+
+    return nasdaq_obj
+
+@app.route("/search")
+def auto_complete_search():
+
+    term = request.args.get("q")
+    query = db.session.query(Company.name).filter(or_(
+                Company.name.ilike("%" + str(term) + "%"),
+                Company.name == str(term),
+            )).limit(5)
+    results = [cn[0] for cn in query.all()]
+    print(results)
+    return jsonify(matching_results = results)
+
+@app.route("/search/company", methods=["POST"])
+def get_company_info():
+
+    data = {}
+    req = request.get_json()
+    name = req["name"]
+    symbol = query_db_for_symbol(name)
+
+    chart_url = (f"{STOCK_API_URL}historical-chart/1min/{symbol}?apikey={STOCK_API_KEY}")
+    chart = get_jsonparsed_data(chart_url)
+
+    data["chart"] = chart
+    data["profile"] = get_company_profile(symbol)
+
+    return make_response(jsonify(data))
+
+#########################################
+# USER SIGNUP/LOGIN
 
 @app.route('/signup', methods=["GET", "POST"])
 def signup():
     """Sign up a user add to database with encrypted password"""
 
-    if CURR_USER_KEY in session:
-        del session[CURR_USER_KEY]
     form = SignUpForm()
 
     if form.validate_on_submit():
@@ -81,7 +223,6 @@ def signup():
 
     else:
         return render_template('user/signup.html', form=form)
-
 
 @app.route('/login', methods=["GET", "POST"])
 def login():
@@ -108,215 +249,50 @@ def logout():
 
     return redirect('/')
 
+@app.route('/movers/gainers')
+def show_gainers():
 
-@app.route('/news')
-def show_news():
-    
-    if not g.user:
-        return redirect('/')
-
-    news = get_headline_news()
-
-    return render_template('user/home.html', news=news)
-
-@app.route("/add/following/<symbol>")
-def add_to_following(symbol):
-
-    if not g.user:
-        return redirect('/')
-
-    following = Following(
-        user_id=g.user.id,
-        company_symbol=symbol
+    return render_template(
+        "user/gainers.html",
+        snp=snp(),
+        dow=dow(),
+        nasdaq=nasdaq(),
+        marquee=get_movers(),
+        gainers=get_gainers()
     )
-    db.session.add(following)
-    db.session.commit()
 
-    return redirect("/")
+@app.route('/movers/losers')
+def show_losers():
 
-#################### 
-# API FUNCTIONS
-####################
-
-def query_db_for_symbol(term):
-
-    query = db.session.query(Company.symbol).filter(or_(
-        Company.name.ilike("%" + term + "%"),
-        Company.name == term,
-        Company.symbol == term
-    ))
-
-    res = [cn[0] for cn in query.all()]
-    symbol = str(res[0]).strip("[' ']")
-
-    return symbol
-
-def get_todays_data(data):
-
-    chart = []
-
-    todays_date = date.today()
-    today = todays_date.strftime("%Y-%m-%d")
-    yesterday = date.today() - timedelta(days = 1)
-    
-    for item in data:
-        time = item["date"][0:10]
-        if time == today:
-            chart_data = {
-                "date" : item["date"],
-                "price" : item["close"]
-            }
-            chart.append(chart_data.copy())
-
-    return chart
-
-def get_company_profile(symbol):
-
-    url = (f"{STOCK_API_URL}profile/{symbol}?apikey={STOCK_API_KEY}")
-
-    profile = get_jsonparsed_data(url)
-
-    return profile
-
-def get_press(symbol):
-
-    url = (f"{STOCK_API_URL}press-releases/{symbol}?limit=50&apikey={STOCK_API_KEY}")
-    press = get_jsonparsed_data(url)
-
-    return press
-
-def get_company_news(symbol):
-
-    news_url = (f"{STOCK_API_URL}stock_news?tickers={symbol}&limit=20&apikey={STOCK_API_KEY}")
-    news = get_jsonparsed_data(news_url)
-
-    return news
-
-def get_quote(symbol):
-
-    url = (f"{STOCK_API_URL}quote-short/{symbol}?apikey={STOCK_API_KEY}")
-    quote = get_jsonparsed_data(url)
-
-    return quote
-
-def get_jsonparsed_data(url):
-
-    response = urlopen(url)
-    data = response.read().decode("utf-8")
-    return json.loads(data)
-
-def get_headline_news():
-
-    news_url = (f"{STOCK_API_URL}stock_news?limit=20&apikey={STOCK_API_KEY}")
-    news = get_jsonparsed_data(news_url)
-
-    return news
-
-@app.route("/snp")
-def snp():
-
-    snp_url = (f"{STOCK_API_URL}historical-chart/5min/%5EGSPC?apikey={STOCK_API_KEY}")
-    snp_res = get_jsonparsed_data(snp_url)
-    snp = get_todays_data(snp_res)
-
-    return make_response(jsonify(snp))
-
-@app.route("/dow")
-def dow():
-
-    dow_url = (f"{STOCK_API_URL}historical-chart/5min/%5EDJI?apikey={STOCK_API_KEY}")
-    dow_res = get_jsonparsed_data(dow_url)
-    dow = get_todays_data(dow_res)
-
-    return make_response(jsonify(dow))
-
-@app.route("/nasdaq")
-def nasdaq():
-
-    nasdaq_url = (f"{STOCK_API_URL}historical-chart/5min/%5EIXIC?apikey={STOCK_API_KEY}")
-    nasdaq_res = get_jsonparsed_data(nasdaq_url)
-    nasdaq = get_todays_data(nasdaq_res)
-
-    return make_response(jsonify(nasdaq))
-
-@app.route("/movers")
-def movers():
-
-    actives = (f"{STOCK_API_URL}actives?apikey={STOCK_API_KEY}")
-    result = get_jsonparsed_data(actives)
-
-    return make_response(jsonify(result))
-
-@app.route("/search")
-def auto_complete_search():
-
-    term = request.args.get("q")
-    query = db.session.query(Company.name).filter(or_(
-            Company.name.ilike("%" + str(term) + "%"),
-            Company.name == str(term),
-        )).limit(5)
-    results = [cn[0] for cn in query.all()]
-
-    return jsonify(matching_results = results)
-
-@app.route("/search/company", methods=["POST"])
-def get_company_info():
-
-    data = {}
-
-    req = request.get_json()
-    name = req["name"]
-    symbol = query_db_for_symbol(name)
-
-    chart_url = (f"{STOCK_API_URL}historical-chart/1min/{symbol}?apikey={STOCK_API_KEY}")
-    chart = get_jsonparsed_data(chart_url)
-
-    data["chart"] = get_todays_data(chart)
-    data["news"] = get_company_news(symbol)
-    data["profile"] = get_company_profile(symbol)
-    data["press"] = get_press(symbol)
-
-    return make_response(jsonify(data))
+    return render_template(
+        "user/losers.html",
+        snp=snp(),
+        dow=dow(),
+        nasdaq=nasdaq(),
+        marquee=get_movers(),
+        losers=get_losers()
+    )
 
 
-
-#################### 
-# NAV ROUTES 
-####################
+#########################################
+# NAVIGATION
 
 @app.route("/")
 def homepage():
 
-    if not g.user:
-        return redirect("/login")
+    # if not g.user:
+    #     return redirect("/login")
 
-    headline_news = get_headline_news()
+    gainer_obj = get_gainers()
+    losers_obj = get_losers()
 
-    return render_template("/user/home.html", news = headline_news)
-
-@app.route("/stock")
-def stock():
-
-    if not g.user:
-        return redirect("/login")
-  
-    return render_template("/user/stock.html")
-
-@app.route("/mypage")
-def mypage():
-
-    if not g.user:
-        return redirect("/login")
-
-    query = db.session.query(Following.company_symbol).filter(
-        Following.user_id == g.user.id
+    return render_template(
+        "/user/home.html",
+        news=get_headline_news(),
+        marquee=get_movers(),
+        gainers=gainer_obj[0:10],
+        losers=losers_obj[0:10],
+        snp=snp(),
+        dow=dow(),
+        nasdaq=nasdaq()
     )
-    following = [cs[0] for cs in query.all()]
-    
-    result = []
-
-    for symbol in following:
-        result.append(get_quote(symbol))
-
-    return render_template("/user/mypage.html", following=result)
-

@@ -67,67 +67,30 @@
   </div>
 </div>
 
-<div class="main-container">
-  <div class="set-col">
-    <div class="news-container">
-      <a class="main-news" href="{{ news[0].url }}" target="blank">
-        <img src="{{ news[0].image }}" alt="main-news">
-        <div class="description">
-          <h2>{{ news[0].title}}</h2>
-          <p>{{ news[0].text }}</p>
-        </div>
-      </a>
-    </div>
-    <div class="news-item-container">
-      {% for item in news[1:10] %}
-      <a href="{{ item.url }}" target="blank" class="news-url">
-        <div class="card">
-          <div class="row">
-            <div class="col-sm-4">
-              <img src="{{ item.image }}" class="img-fluid">
-            </div>
-            <div class="col-sm-8">
-              <div class="card-info">
-                <h4>{{ item.title }}</h4>
-                <p>{{ item.text }}</p>
-                <small>{{ item.publishedDate }}</small>
-              </div>
-            </div>
-          </div>
-        </div>
-      </a>
-    {% endfor %}
-    </div>
-  </div>  
 
-  <div class="movers-container">
-
-    <div class="movers-card">
-      <h4>Gainers</h4>
+<div class="gainers-table">
+  <table class="table table-striped">
+    <h2>Top Gainers</h2>
+    <thead class="thead-dark">
+      <th scope="col">Ticker</th>
+      <th scope="col">Name</th>
+      <th scope="col">Price</th>
+      <th scope="col">Change</th>
+      <th scope="col">Percentage</th>
+    </thead>
+    <tbody>
       {% for gainer in gainers %}
-      <div class="movers-info">
-        <p class="movers-item">{{ gainer.ticker }}</p>
-        <p class="movers-gainers">{{ gainer.changesPercentage }}</p>
-        <p class="movers-item">{{ gainer.price }}</p>
-      </div>
+      <tr>
+        <td>{{ gainer.ticker }}</td>
+        <td>{{ gainer.companyName }}</td>
+        <td>{{ gainer.price }}</td>
+        <td>+{{ gainer.changes }}</td>
+        <td>{{ gainer.changesPercentage }}</td>
+      </tr>
       {% endfor %}
-      <a href='/movers/gainers' class="movers-action">See more...</a>
-    </div>
-
-    <div class="movers-card">
-      <h4>Losers</h4>
-      {% for loser in losers %}
-      <div class="movers-info">
-        <p class="movers-item">{{ loser.ticker }}</p>
-        <p class="movers-losers">{{ loser.changesPercentage }}</p>
-        <p class="movers-item">{{ loser.price }}</p>
-      </div>
-      {% endfor %}
-      <a href='/movers/losers' class="movers-action">See more...</a>
-    </div>
-
-  </div>
-
+    </tbody>
+  </table>
 </div>
+
 
 {% endblock %}
