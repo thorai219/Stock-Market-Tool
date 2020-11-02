@@ -130,7 +130,6 @@
 </div>
 
 
-
 <script type="text/javascript">
 
   $(() => {
@@ -142,22 +141,20 @@
       plugins: {
         crosshair: {
           line: {
-            color: '#000000',  // crosshair line color
-            width: 1        // crosshair line width
+            color: '#000000',  
+            width: 1  
           },
           sync: {
-            enabled: true,  
-            group: 1,                 // chart group
-            suppressTooltips: false   // suppress tooltips when showing a synced tracer
+            enabled: false
           },
           zoom: {
             enabled: false
           },
           callbacks: {
-            beforeZoom: function(start, end) {                  // called before zoom, return false to prevent zoom
+            beforeZoom: function(start, end) { 
               return true;
             },
-            afterZoom: function(start, end) {                   // called after zoom
+            afterZoom: function(start, end) { 
             }
           }
         }
@@ -165,7 +162,7 @@
       responsive: true,
       maintainAspectRatio: false,
       legend: {
-        position: 'bottom'
+        display: false
       },
       elements: {
         point:{
@@ -226,7 +223,6 @@
         labels : labels,
         datasets: [{ 
           data : prices,
-            label: "S&P 500",
             fill: true,
             borderWidth: 2,
             backgroundColor: shade(prices),

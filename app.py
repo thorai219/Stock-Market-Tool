@@ -8,6 +8,7 @@ from sqlalchemy.exc import IntegrityError
 from urllib.request import urlopen
 from datetime import date,datetime, timedelta
 from urllib import parse
+from api import STOCK_API_KEY
 import json, requests, os
 
 CURR_USER_KEY = "curr_user"
@@ -15,7 +16,7 @@ app = Flask(__name__)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'postgres:///stock_market')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
-STOCK_API_KEY = os.environ.get('STOCK_API_KEY', 'e238829117597ae6045cf06afab65ab5')
+STOCK_API_KEY = os.environ.get('STOCK_API_KEY', STOCK_API_KEY)
 app.config['SQLALCHEMY_ECHO'] = False
 app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'hefedelaspldas1122333fas')
@@ -193,6 +194,9 @@ def auto_complete_search():
 @app.route("/search/ticker", methods=["POST"])
 def get_company_info():
 
+    if not g.user:
+        return redirect('/login')
+
     symbol = request.form["search"]
     ticker = query_db_for_symbol(symbol)
     print(ticker)
@@ -203,7 +207,6 @@ def get_company_info():
     labels = json.dumps(get_labels(chart))
     prices = json.dumps(get_prices(chart))
   
-
     return render_template(
         'user/chart.html',
         labels=labels,
@@ -213,7 +216,21 @@ def get_company_info():
         rating=get_company_rating(ticker)
     )
     
-    # return make_response(jsonify(data))
+@app.route("/add/following/<symbol>")
+def add_to_following(symbol):
+
+    if not g.user:
+        return redirect('/')
+
+    following = Following(
+        user_id=g.user.id,
+        company_symbol=symbol
+    )
+    db.session.add(following)
+    db.session.commit()
+
+    return redirect("/")
+
 
 #########################################
 # USER SIGNUP/LOGIN
@@ -221,6 +238,9 @@ def get_company_info():
 @app.route('/signup', methods=["GET", "POST"])
 def signup():
     """Sign up a user add to database with encrypted password"""
+
+    if g.user:
+        return redirect('/login')
 
     form = SignUpForm()
 
@@ -273,6 +293,9 @@ def logout():
 @app.route('/movers/gainers')
 def show_gainers():
 
+    if not g.user:
+        return redirect('/login')
+
     return render_template(
         "user/gainers.html",
         snp=snp(),
@@ -284,6 +307,9 @@ def show_gainers():
 
 @app.route('/movers/losers')
 def show_losers():
+
+    if not g.user:
+        return redirect('/login')
 
     return render_template(
         "user/losers.html",
@@ -300,9 +326,6 @@ def show_losers():
 
 @app.route("/")
 def homepage():
-
-    # if not g.user:
-    #     return redirect("/login")
 
     gainer_obj = get_gainers()
     losers_obj = get_losers()
