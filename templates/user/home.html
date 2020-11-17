@@ -26,12 +26,12 @@
       <p>Price: ${{ snp.price }}</p>
 
       {% if snp.changesPercentage[0:1] == '-' %}
-        <p>Today: <span style="color: #e74c3c;">{{ snp.change }} ({{ snp.changesPercentage }})</span></p>
+      <p>Today: <span style="color: #e74c3c;">{{ snp.change }} ({{ snp.changesPercentage }})</span></p>
       {% else %}
-        <p>Today: <span style="color: #2ecc71;">{{ snp.change }} ({{ snp.changesPercentage }})</span></p>
+      <p>Today: <span style="color: #2ecc71;">{{ snp.change }} ({{ snp.changesPercentage }})</span></p>
       {% endif %}
 
-    </div> 
+    </div>
   </div>
 
   <div class="dow index-card">
@@ -42,13 +42,13 @@
       <p>Price: ${{ dow.price }}</p>
 
       {% if dow.changesPercentage[0:1] == '-' %}
-        <p>Today: <span style="color: #e74c3c;">{{ dow.change }} ({{ dow.changesPercentage }})</span></p>
+      <p>Today: <span style="color: #e74c3c;">{{ dow.change }} ({{ dow.changesPercentage }})</span></p>
       {% else %}
-        <p>Today: <span style="color: #2ecc71;">{{ dow.change }} ({{ dow.changesPercentage }})</span></p>
+      <p>Today: <span style="color: #2ecc71;">{{ dow.change }} ({{ dow.changesPercentage }})</span></p>
       {% endif %}
 
-    </div> 
-  </div>  
+    </div>
+  </div>
 
   <div class="nasdaq index-card">
     <div class="index-header">
@@ -58,12 +58,12 @@
       <p>Price: ${{ nasdaq.price }}</p>
 
       {% if nasdaq.changesPercentage[0:1] == '-' %}
-        <p>Today: <span style="color: #e74c3c;">{{ nasdaq.change }} ({{ nasdaq.changesPercentage }})</span></p>
+      <p>Today: <span style="color: #e74c3c;">{{ nasdaq.change }} ({{ nasdaq.changesPercentage }})</span></p>
       {% else %}
-        <p>Today: <span style="color: #2ecc71;">{{ nasdaq.change }} ({{ nasdaq.changesPercentage }})</span></p>
+      <p>Today: <span style="color: #2ecc71;">{{ nasdaq.change }} ({{ nasdaq.changesPercentage }})</span></p>
       {% endif %}
 
-    </div> 
+    </div>
   </div>
 </div>
 
@@ -96,9 +96,9 @@
           </div>
         </div>
       </a>
-    {% endfor %}
+      {% endfor %}
     </div>
-  </div>  
+  </div>
 
   <div class="movers-container">
 
@@ -129,5 +129,24 @@
   </div>
 
 </div>
+
+<script>
+  function fetchdata() {
+    $.ajax({
+      url: "/long/polling/snp",
+      type: 'GET',
+      success: function (data) {
+        console.log(data);
+      },
+      complete: function (data) {
+        setTimeout(fetchdata, 60000);
+      }
+    });
+  }
+
+  $(document).ready(function () {
+    setTimeout(fetchdata, 60000);
+  });
+</script>
 
 {% endblock %}

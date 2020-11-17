@@ -231,6 +231,11 @@ def add_to_following(symbol):
 
     return redirect("/")
 
+@app.route("/long/polling/snp")
+def snp_long_polling():
+
+    return snp()
+
 
 #########################################
 # USER SIGNUP/LOGIN
