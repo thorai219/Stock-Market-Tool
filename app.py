@@ -196,10 +196,11 @@ def get_company_info():
 
     if not g.user:
         return redirect('/login')
-
-    symbol = request.form["search"]
+        
+    symbol = request.form['search']
+    if symbol == '':
+        return render_template('404.html')
     ticker = query_db_for_symbol(symbol)
-    print(ticker)
 
     chart_url = (f"{STOCK_API_URL}historical-chart/1min/{ticker}?apikey={STOCK_API_KEY}")
     chart = get_jsonparsed_data(chart_url)
@@ -236,6 +237,15 @@ def snp_long_polling():
 
     return snp()
 
+@app.route("/long/polling/dow")
+def dow_long_polling():
+
+    return dow()
+
+@app.route("/long/polling/nasdaq")
+def nasdaq_long_polling():
+
+    return nasdaq()
 
 #########################################
 # USER SIGNUP/LOGIN
@@ -324,7 +334,6 @@ def show_losers():
         marquee=get_movers(),
         losers=get_losers()
     )
-
 
 #########################################
 # NAVIGATION

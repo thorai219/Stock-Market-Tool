@@ -23,7 +23,7 @@
       <h4>{{ snp.name }}</h4>
     </div>
     <div class="index-info">
-      <p>Price: ${{ snp.price }}</p>
+      <p id='snp-price'></p>
 
       {% if snp.changesPercentage[0:1] == '-' %}
       <p>Today: <span style="color: #e74c3c;">{{ snp.change }} ({{ snp.changesPercentage }})</span></p>
@@ -39,7 +39,7 @@
       <h4>{{ dow.name }}</h4>
     </div>
     <div class="index-info">
-      <p>Price: ${{ dow.price }}</p>
+      <p id='dow-price'></p>
 
       {% if dow.changesPercentage[0:1] == '-' %}
       <p>Today: <span style="color: #e74c3c;">{{ dow.change }} ({{ dow.changesPercentage }})</span></p>
@@ -55,7 +55,7 @@
       <h4>{{ nasdaq.name }}</h4>
     </div>
     <div class="index-info">
-      <p>Price: ${{ nasdaq.price }}</p>
+      <p id='nasdaq-price'></p>
 
       {% if nasdaq.changesPercentage[0:1] == '-' %}
       <p>Today: <span style="color: #e74c3c;">{{ nasdaq.change }} ({{ nasdaq.changesPercentage }})</span></p>
@@ -131,21 +131,28 @@
 </div>
 
 <script>
-  function fetchdata() {
+  function longPolling(index) {
     $.ajax({
-      url: "/long/polling/snp",
+      url: `/long/polling/${index}`,
       type: 'GET',
       success: function (data) {
-        console.log(data);
+        console.log(data)
+        $(`#${index}-price`).html('')
+        $(`#${index}-price`).append(`
+          Price: $${data.price}
+        `)
       },
       complete: function (data) {
-        setTimeout(fetchdata, 60000);
+        setTimeout(longPolling, 60000);
       }
-    });
+    })
   }
+  let indexes = ['snp', 'dow', 'nasdaq']
 
   $(document).ready(function () {
-    setTimeout(fetchdata, 60000);
+    for (const item of indexes) {
+      setInterval(longPolling(item), 2000);
+    }
   });
 </script>
 
