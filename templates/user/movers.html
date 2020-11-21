@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="marquee">
+  <ul class="marquee-content">
+    {% for item in marquee %}
+    {% if item.changesPercentage[0:1] == '-' %}
+    <li class="marquee-item" style="color: #e74c3c;">
+      {{ item.ticker }} ${{item.price}} {{item.changesPercentage}}
+    </li>
+    {% else %}
+    <li class="marquee-item" style="color: #2ecc71;">
+      {{ item.ticker }} ${{item.price}} {{item.changesPercentage}}
+    </li>
+    {% endif %}
+    {% endfor %}
+  </ul>
+</div>
+
+<div class="container">
+  <div class="d-flex justify-content-around row mt-4 major-index">
+
+    <div class='card col-md-4'>
+      <div class="card-body">
+        <h4>S&P 500</h4>
+        <p id='snp-price'></p>
+        {% if snp.changesPercentage[0:1] == '-' %}
+        <p>Today: <span style="color: #e74c3c;">{{ snp.change }} ({{ snp.changesPercentage }})</span></p>
+        {% else %}
+        <p>Today: <span style="color: #2ecc71;">{{ snp.change }} ({{ snp.changesPercentage }})</span></p>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class='card col-md-4'>
+      <div class="card-body">
+        <h4>Dow Jones</h4>
+        <p id='dow-price'></p>
+        {% if dow.changesPercentage[0:1] == '-' %}
+        <p>Today: <span style="color: #e74c3c;">{{ dow.change }} ({{ dow.changesPercentage }})</span></p>
+        {% else %}
+        <p>Today: <span style="color: #2ecc71;">{{ dow.change }} ({{ dow.changesPercentage }})</span></p>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class='card col-md-4'>
+      <div class="card-body">
+        <h4>Nasdaq</h4>
+        <p id='nasdaq-price'></p>
+        {% if nasdaq.changesPercentage[0:1] == '-' %}
+        <p>Today: <span style="color: #e74c3c;">{{ nasdaq.change }} ({{ nasdaq.changesPercentage }})</span></p>
+        {% else %}
+        <p>Today: <span style="color: #2ecc71;">{{ nasdaq.change }} ({{ nasdaq.changesPercentage }})</span></p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="my-4 table">
+    <table class="table table-striped">
+      <h2>Top Gainers</h2>
+      <thead class="thead-dark">
+        <th scope="col">Ticker</th>
+        <th class='hide' scope="col">Name</th>
+        <th scope="col">Price</th>
+        <th scope="col">Change</th>
+        <th scope="col">Percentage</th>
+      </thead>
+      <tbody>
+        {% for gainer in gainers %}
+        <tr>
+          <td>{{ gainer.ticker }}</td>
+          <td class='hide'>{{ gainer.companyName }}</td>
+          <td>{{ gainer.price }}</td>
+          <td>+{{ gainer.changes }}</td>
+          <td>{{ gainer.changesPercentage }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="my-4 table">
+    <table class="table table-striped">
+      <h2>Top Loser</h2>
+      <thead class="thead-dark">
+        <th scope="col">Ticker</th>
+        <th class='hide' scope="col">Name</th>
+        <th scope="col">Price</th>
+        <th scope="col">Change</th>
+        <th scope="col">Percentage</th>
+      </thead>
+      <tbody>
+        {% for loser in losers %}
+        <tr>
+          <td>{{ loser.ticker }}</td>
+          <td class='hide'>{{ loser.companyName }}</td>
+          <td>{{ loser.price }}</td>
+          <td>{{ loser.changes }}</td>
+          <td>{{ loser.changesPercentage }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <div class="my-4 table">
+      <table class='table table-striped'>
+        <h2>Sector Performace</h2>
+        <thead class='thead-dark'>
+          <th scope="col">Sector</th>
+          <th scope="col">Changes</th>
+        </thead>
+        <tbody>
+          {% for item in sector %}
+          <tr>
+            <td>{{ item.sector }}</td>
+            <td>{{ item.changesPercentage }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+  {% endblock %}

@@ -17,142 +17,187 @@
   </ul>
 </div>
 
-<div class="major-index">
-  <div class="snp index-card">
-    <div class="index-header">
-      <h4>{{ snp.name }}</h4>
-    </div>
-    <div class="index-info">
-      <p id='snp-price'></p>
+<div class="container" id="chart">
+  <div class="d-flex justify-content-around row mt-4 major-index">
 
-      {% if snp.changesPercentage[0:1] == '-' %}
-      <p>Today: <span style="color: #e74c3c;">{{ snp.change }} ({{ snp.changesPercentage }})</span></p>
-      {% else %}
-      <p>Today: <span style="color: #2ecc71;">{{ snp.change }} ({{ snp.changesPercentage }})</span></p>
-      {% endif %}
-
+    <div class='card col-md-4'>
+      <div class="card-body">
+        <h4 class='text-center'>S&P 500</h4>
+        <p class='text-center' id='snp-price'></p>
+        {% if snp.changesPercentage[0:1] == '-' %}
+        <p class='text-center'>Today: <span style="color: #e74c3c;">{{ snp.change }}
+            ({{ snp.changesPercentage }})</span></p>
+        {% else %}
+        <p class='text-center'>Today: <span style="color: #2ecc71;">{{ snp.change }}
+            ({{ snp.changesPercentage }})</span></p>
+        {% endif %}
+      </div>
     </div>
+
+    <div class='card col-md-4'>
+      <div class="card-body">
+        <h4 class='text-center'>Dow Jones</h4>
+        <p class='text-center' id='dow-price'></p>
+        {% if dow.changesPercentage[0:1] == '-' %}
+        <p class='text-center'>Today: <span style="color: #e74c3c;">{{ dow.change }}
+            ({{ dow.changesPercentage }})</span></p>
+        {% else %}
+        <p class='text-center'>Today: <span style="color: #2ecc71;">{{ dow.change }}
+            ({{ dow.changesPercentage }})</span></p>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class='card col-md-4'>
+      <div class="card-body">
+        <h4 class='text-center'>Nasdaq</h4>
+        <p class='text-center' id='nasdaq-price'></p>
+        {% if nasdaq.changesPercentage[0:1] == '-' %}
+        <p class='text-center'>Today: <span style="color: #e74c3c;">{{ nasdaq.change }}
+            ({{ nasdaq.changesPercentage }})</span></p>
+        {% else %}
+        <p class='text-center'>Today: <span style="color: #2ecc71;">{{ nasdaq.change }}
+            ({{ nasdaq.changesPercentage }})</span></p>
+        {% endif %}
+      </div>
+    </div>
+
   </div>
 
-  <div class="dow index-card">
-    <div class="index-header">
-      <h4>{{ dow.name }}</h4>
-    </div>
-    <div class="index-info">
-      <p id='dow-price'></p>
-
-      {% if dow.changesPercentage[0:1] == '-' %}
-      <p>Today: <span style="color: #e74c3c;">{{ dow.change }} ({{ dow.changesPercentage }})</span></p>
-      {% else %}
-      <p>Today: <span style="color: #2ecc71;">{{ dow.change }} ({{ dow.changesPercentage }})</span></p>
-      {% endif %}
-
-    </div>
-  </div>
-
-  <div class="nasdaq index-card">
-    <div class="index-header">
-      <h4>{{ nasdaq.name }}</h4>
-    </div>
-    <div class="index-info">
-      <p id='nasdaq-price'></p>
-
-      {% if nasdaq.changesPercentage[0:1] == '-' %}
-      <p>Today: <span style="color: #e74c3c;">{{ nasdaq.change }} ({{ nasdaq.changesPercentage }})</span></p>
-      {% else %}
-      <p>Today: <span style="color: #2ecc71;">{{ nasdaq.change }} ({{ nasdaq.changesPercentage }})</span></p>
-      {% endif %}
-
-    </div>
-  </div>
-</div>
-
-<div class="main-container">
-  <div class="set-col">
-    <div class="news-container">
-      <a class="main-news" href="{{ news[0].url }}" target="blank">
-        <img src="{{ news[0].image }}" alt="main-news">
-        <div class="description">
-          <h2>{{ news[0].title}}</h2>
-          <p>{{ news[0].text }}</p>
-        </div>
-      </a>
-    </div>
-    <div class="news-item-container">
-      {% for item in news[1:10] %}
-      <a href="{{ item.url }}" target="blank" class="news-url">
-        <div class="card">
-          <div class="row">
-            <div class="col-sm-4">
-              <img src="{{ item.image }}" class="img-fluid">
-            </div>
-            <div class="col-sm-8">
-              <div class="card-info">
-                <h4>{{ item.title }}</h4>
-                <p>{{ item.text }}</p>
-                <small>{{ item.publishedDate }}</small>
+  <h4 class='text-center m-4'>Current News</h4>
+  <hr>
+  <div class="row">
+    <div class="col-sm-8 mt-4">
+      <div class="news-item-container">
+        {% for item in news %}
+        <a href="{{ item.url }}" target="blank" class="news-url">
+          <div class="card">
+            <div class="row">
+              <div class="col-sm-5">
+                <img src="{{ item.image }}" class="img-fluid">
+              </div>
+              <div class="col-sm-7">
+                <div class="card-info">
+                  <h4>{{ item.title }}</h4>
+                  <small>{{ item.publishedDate }}</small>
+                </div>
               </div>
             </div>
           </div>
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="col-sm-4">
+      <div class="movers-container">
+        <div class="movers-card">
+          <h4>Gainers</h4>
+          {% for gainer in gainers %}
+          <div class="movers-info">
+            <p class="movers-item">{{ gainer.ticker }}</p>
+            <p class="movers-item">{{ gainer.price }}</p>
+            <p class="movers-gainers">{{ gainer.changesPercentage }}</p>
+          </div>
+          {% endfor %}
+          <a href='/movers' class="movers-action">See more...</a>
         </div>
-      </a>
-      {% endfor %}
-    </div>
-  </div>
 
-  <div class="movers-container">
-
-    <div class="movers-card">
-      <h4>Gainers</h4>
-      {% for gainer in gainers %}
-      <div class="movers-info">
-        <p class="movers-item">{{ gainer.ticker }}</p>
-        <p class="movers-item">{{ gainer.price }}</p>
-        <p class="movers-gainers">{{ gainer.changesPercentage }}</p>
+        <div class="movers-card">
+          <h4>Losers</h4>
+          {% for loser in losers %}
+          <div class="movers-info">
+            <p class="movers-item">{{ loser.ticker }}</p>
+            <p class="movers-item">{{ loser.price }}</p>
+            <p class="movers-losers">{{ loser.changesPercentage }}</p>
+          </div>
+          {% endfor %}
+          <a href='/movers' class="movers-action">See more...</a>
+        </div>
       </div>
-      {% endfor %}
-      <a href='/movers/gainers' class="movers-action">See more...</a>
-    </div>
 
-    <div class="movers-card">
-      <h4>Losers</h4>
-      {% for loser in losers %}
-      <div class="movers-info">
-        <p class="movers-item">{{ loser.ticker }}</p>
-        <p class="movers-item">{{ loser.price }}</p>
-        <p class="movers-losers">{{ loser.changesPercentage }}</p>
+      <div class="movers-container">
+        <div class="movers-card">
+          <h4>Sector Performace</h4>
+          {% for item in sector[0:10] %}
+          <div class="movers-info">
+            <div>
+              <p class='movers-item'>{{ item.sector }}</p>
+            </div>
+            {% if item.changesPercentage[0:1] == '-' %}
+            <p class='movers-losers'>{{ item.changesPercentage }}</p>
+            {% else %}
+            <p class='movers-gainers'>{{ item.changesPercentage }}</p>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+        <a href='/movers' class="movers-action">See more...</a>
       </div>
-      {% endfor %}
-      <a href='/movers/losers' class="movers-action">See more...</a>
-    </div>
 
+    </div>
   </div>
 
 </div>
 
 <script>
-  function longPolling(index) {
+  function fetchSNP() {
     $.ajax({
-      url: `/long/polling/${index}`,
+      url: "/long/polling/snp",
       type: 'GET',
       success: function (data) {
-        console.log(data)
-        $(`#${index}-price`).html('')
-        $(`#${index}-price`).append(`
+        $('#snp-price').html('')
+        $('#snp-price').append(`
           Price: $${data.price}
         `)
       },
       complete: function (data) {
-        setTimeout(longPolling, 60000);
+        setTimeout(fetchSNP, 60000);
       }
-    })
+    });
   }
-  let indexes = ['snp', 'dow', 'nasdaq']
+
+  function fetchDOW() {
+    $.ajax({
+      url: "/long/polling/dow",
+      type: 'GET',
+      success: function (data) {
+        $('#dow-price').html('')
+        $('#dow-price').append(`
+          Price: $${data.price}
+        `)
+      },
+      complete: function (data) {
+        setTimeout(fetchDOW, 60000);
+      }
+    });
+  }
+
+  function fetchNasdaq() {
+    $.ajax({
+      url: "/long/polling/nasdaq",
+      type: 'GET',
+      success: function (data) {
+        $('#nasdaq-price').html('')
+        $('#nasdaq-price').append(`
+          Price: $${data.price}
+        `)
+      },
+      complete: function (data) {
+        setTimeout(fetchNasdaq, 60000);
+      },
+    });
+  }
 
   $(document).ready(function () {
-    for (const item of indexes) {
-      setInterval(longPolling(item), 2000);
-    }
+    setTimeout(fetchSNP, 1000);
+    setTimeout(fetchDOW, 1000)
+    setTimeout(fetchNasdaq, 1000)
+  })
+
+  $(document).ready(function () {
+    setInterval(fetchSNP, 60000);
+    setInterval(fetchDOW, 60000);
+    setInterval(fetchNasdaq, 60000);
   });
 </script>
 

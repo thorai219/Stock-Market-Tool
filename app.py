@@ -60,24 +60,6 @@ def get_jsonparsed_data(url):
     data = response.read().decode("utf-8")
     return json.loads(data)
 
-def get_labels(data):
-
-    label = []
-
-    for item in data:
-        label.append(item["date"])
-
-    return label
-
-def get_prices(data):
-
-    price = []
-
-    for item in data:
-        price.append(item["close"])
-
-    return price
-
 def query_db_for_symbol(term):
 
     query = db.session.query(Company.symbol).filter(or_(
@@ -118,6 +100,13 @@ def get_losers():
     losers = get_jsonparsed_data(losers_url)
 
     return losers
+
+def sector_performance():
+
+    sector_url = (f"{STOCK_API_URL}sectors-performance?apikey={STOCK_API_KEY}")
+    sector = get_jsonparsed_data(sector_url)
+
+    return sector
 
 def get_company_profile(symbol):
 
@@ -191,31 +180,42 @@ def auto_complete_search():
 
     return jsonify(matching_results = results)
 
+@app.route("/get/profile", methods=["POST"])
+def get_profile():
+
+    if not g.user:
+        return redirect('/login')
+
+    name = request.json['value']
+
+    if name == '':
+        return render_template('404.html')
+    ticker = query_db_for_symbol(name)
+
+    profile = {}
+    profile["company"] = get_company_profile(ticker)
+    profile["rating"] = get_company_rating(ticker)
+    profile["financial"] = get_company_financials(ticker)
+
+    return make_response(jsonify(profile))
+    
 @app.route("/search/ticker", methods=["POST"])
 def get_company_info():
 
     if not g.user:
         return redirect('/login')
-        
-    symbol = request.form['search']
-    if symbol == '':
+
+    name = request.json['value']
+
+    if name == '':
         return render_template('404.html')
-    ticker = query_db_for_symbol(symbol)
+    ticker = query_db_for_symbol(name)
 
     chart_url = (f"{STOCK_API_URL}historical-chart/1min/{ticker}?apikey={STOCK_API_KEY}")
     chart = get_jsonparsed_data(chart_url)
 
-    labels = json.dumps(get_labels(chart))
-    prices = json.dumps(get_prices(chart))
-  
-    return render_template(
-        'user/chart.html',
-        labels=labels,
-        prices=prices,
-        profile=get_company_profile(ticker) ,
-        financials=get_company_financials(ticker),
-        rating=get_company_rating(ticker)
-    )
+
+    return make_response(jsonify(chart))
     
 @app.route("/add/following/<symbol>")
 def add_to_following(symbol):
@@ -305,35 +305,23 @@ def logout():
 
     return redirect('/')
 
-@app.route('/movers/gainers')
+@app.route('/movers')
 def show_gainers():
 
     if not g.user:
         return redirect('/login')
 
     return render_template(
-        "user/gainers.html",
+        "user/movers.html",
         snp=snp(),
         dow=dow(),
         nasdaq=nasdaq(),
         marquee=get_movers(),
-        gainers=get_gainers()
+        gainers=get_gainers(),
+        losers=get_losers(),
+        sector=sector_performance()
     )
 
-@app.route('/movers/losers')
-def show_losers():
-
-    if not g.user:
-        return redirect('/login')
-
-    return render_template(
-        "user/losers.html",
-        snp=snp(),
-        dow=dow(),
-        nasdaq=nasdaq(),
-        marquee=get_movers(),
-        losers=get_losers()
-    )
 
 #########################################
 # NAVIGATION
@@ -343,6 +331,7 @@ def homepage():
 
     gainer_obj = get_gainers()
     losers_obj = get_losers()
+    snp()
 
     return render_template(
         "/user/home.html",
@@ -352,5 +341,6 @@ def homepage():
         losers=losers_obj[0:10],
         snp=snp(),
         dow=dow(),
-        nasdaq=nasdaq()
+        nasdaq=nasdaq(),
+        sector=sector_performance()
     )

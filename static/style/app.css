@@ -8,63 +8,39 @@ body {
   background-color: #ebebeb;
 }
 
-.main-container {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  width: 1200px;
-  margin: 0 auto;
-}
-
-.set-col {
-  flex-direction: column;
-}
-
-.news-container {
-  width: 800px;
-  margin: 25px auto;
-  position: relative;
-}
-
-.news-item-container {
-  width: 800px;
-  margin: 0 auto;
-}
-
-.news-item-container a:hover {
-  color:black;
-  text-decoration: none;
-}
-
-.main-news {
-  margin: 0 auto;
-  text-align: center;
-  color: white;
-  border-radius: 5px;
-}
-
-.main-news img {
-  position: relative;
-  width: 100%;
+.card {
+  background-color:#f8f8ff;
+  margin-bottom: 12px;
   border-radius: 10px;
 }
 
-.description {
-  position: absolute;
-  bottom: 8px;
-  right: 16px;
+.chart-container {
+  height: 500px;
 }
 
-.main-news:hover {
-  color: white;
+.img-logo {
+  width: 100px;
+  height: 100px;
 }
 
 .news-url {
   color: #123456;
 }
 
+.news-url:hover {
+  text-decoration: none;
+}
+
+.card-info {
+  padding: 10px;
+}
+
+.my-form {
+  display: flex;
+  flex-direction: row;
+}
+
 .movers-container {
-  width: 350px;
   font-size: 14px;
 }
 
@@ -88,7 +64,6 @@ body {
   font-weight: bold;
   font-size: 13px;
   padding: 3px;
-  width: 100px;
   margin: 15px;
 }
 
@@ -116,83 +91,9 @@ body {
   margin: 15px;
 }
 
-.movers-action {
-  margin-left: 250px;
-}
-
-.card {
-  background-color:#f8f8ff;
-  margin-bottom: 12px;
-  border-radius: 10px;
-}
-
-.card-info {
-  padding: 10px;
-}
-
-.items {
-  padding: 10px;
-  margin-right: 5px;
-  font-size: 11px;
-  font-weight: bold;
-  color: #123456;
-  background-color: #f8f8ff;
-  -webkit-box-shadow: 1px 1px 0 1px rgba(0, 0, 0, 0.5);
-  -moz-box-shadow: 1px 1px 0 1px rgba(0, 0, 0, 0.5);
-  box-shadow: 1px 1px 0 1px rgba(0, 0, 0, 0.2);
-  border-radius: 15px;
-}
-
-.major-index {
+.profile-tables {
   display: flex;
   flex-direction: row;
-  justify-content: space-evenly;
-  width: 70vw;
-  margin: 20px auto;
-}
-
-.index-header {
-  margin: 10px;
-}
-
-.index-card {
-  text-align: center;
-  background-color: #ffffff;
-  width: 20vw;
-  border-radius: 15px;
-}
-
-.gainers-table {
-  width: 1200px;
-  margin: 0 auto;
-}
-
-.company-container {
-  width: 1200px;
-  margin: 30px auto;
-}
-
-.company-info {
-  margin-left: 15px;
-}
-
-.company-description {
-  margin-top: 25px;
-}
-
-.flex-row {
-  display: flex;
-  flex-direction: row;
-}
-
-.profile-container {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-}
-
-.table-custom {
-  width: 350px;
 }
 
 ul.ui-autocomplete {
@@ -202,6 +103,7 @@ ul.ui-autocomplete {
   width: 200px;
   -moz-border-radius: 15px;
   border-radius: 0 !important;
+  border: 1px solid #000000;
   font-size: 16px;
   z-index: 10;
 }
@@ -210,24 +112,34 @@ ul.ui-autocomplete {
   display: none;
 }
 
-
-@media (max-width: 600px) {
-
-  .nav-bar {
-    flex-direction: column;
-  }
-
+@media screen and (max-width: 768px) {
   .major-index {
     flex-direction: column;
+    text-align: center;
+    margin: 20px;
   }
 
-  .search-bar {
-    width: 100%;
+  .profile-tables {
+    flex-direction: column;
   }
 
-  .snp,
-  .dow,
-  .nasdaq {
-    width: 100% !important;
+  .table-custom {
+    margin: 20px 0px;
+  }
+
+  .chart-container {
+    height: 200px;
+  }
+
+  .my-form {
+    width: 80vw;
+  }
+
+  .my-btn {
+    display: none;
+  }
+  
+  .hide {
+    display: none;
   }
 }
