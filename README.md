@@ -1,4 +1,4 @@
-<h1 align="center">Oyster</h1>
+<h1 align="center">Stock</h1>
 <div align="center">
   ## Overview
 
@@ -7,7 +7,7 @@
   - Charts are the best way to illustrate recurrence of price patterns.
 
   <hr>
-  ![Alt text](https://github.com/thorai219/Stock-Market-Tool/blob/media/Oyster.png?raw=true)
+  ![Picture1](https://github.com/thorai219/Stock-Market-Tool/blob/media/Oyster.png)
   - chart screenshots coming soon!
   <a href="https://stockchartandnews.herokuapp.com/news" target="_blank">Working Demo</a>
 
