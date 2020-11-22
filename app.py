@@ -14,8 +14,6 @@ import json, requests, os
 CURR_USER_KEY = "curr_user"
 app = Flask(__name__)
 
-
-
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'postgres:///stock_market')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 STOCK_API_KEY = os.environ.get('STOCK_API_KEY', STOCK_API_KEY)
@@ -217,11 +215,12 @@ def add_to_following():
         return redirect('/')
 
     symbol = request.json['value']
-
-    query = db.session.query(Following.company_symbol).filter(Following.company_symbol==symbol)
+    print(symbol)
+    query = db.session.query(Following.company_symbol).filter(Following.user_id==g.user.id)
     results = [symbol[0] for symbol in query.all()]
+    print(results)
 
-    if len(results) > 0:
+    if symbol in results:
         return make_response(jsonify({"msg": "already following!"}))
     else:
         following = Following(
@@ -247,7 +246,7 @@ def dow_long_polling():
 def nasdaq_long_polling():
 
     return nasdaq()
-
+*
 #########################################
 # USER SIGNUP/LOGIN
 
