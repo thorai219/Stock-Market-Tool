@@ -8,11 +8,12 @@ from sqlalchemy.exc import IntegrityError
 from urllib.request import urlopen
 from datetime import date,datetime, timedelta
 from urllib import parse
-from api import STOCK_API_KEY
 import json, requests, os
 
 CURR_USER_KEY = "curr_user"
 app = Flask(__name__)
+
+STOCK_API_KEY = "e238829117597ae6045cf06afab65ab5"
 
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'postgres:///stock_market')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
