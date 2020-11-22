@@ -15,6 +15,12 @@ $(() => {
   });
 });
 
+$(() => {
+  $("#search").keyup(function () {
+    this.value = this.value.toLocaleUpperCase();
+  });
+});
+
 $("#search-form").on("submit", async function (e) {
   e.preventDefault();
   let name = $("#search").val();
@@ -23,24 +29,31 @@ $("#search-form").on("submit", async function (e) {
     value: name,
   };
 
-  $("#chart").html("");
-  $("#chart").append(`
-    <div class='container'>
-      <div class='card mt-4'>
-        <div class='card-header'></div>
-        <div class="chart-container card-body">
-          <canvas id="myChart" class="myChart"></canvas>
-        </div>
-      </div>
-      <div id='profile'></div>
-    </div>
-  `);
-
   const chart = await axios.post("/search/ticker", search);
   const profile = await axios.post("/get/profile", search);
 
-  renderCompanyProfile(profile);
-  renderChart(chart);
+  if (profile.data.company.length === 0 && chart.data.date.length === 0) {
+    $(".chart").html("");
+    $(".chart").append(`
+      <h2 class="text-center mt-4">No Data...please make sure you typed in correct ticker</h2>
+    `);
+  } else {
+    $(".chart").html("");
+    $(".chart").append(`
+      <div class='container'>
+        <div class='card mt-4'>
+          <div class='card-header'></div>
+          <div class="chart-container card-body">
+            <canvas id="myChart" class="myChart"></canvas>
+          </div>
+        </div>
+        <div id='profile'></div>
+      </div>
+    `);
+
+    renderCompanyProfile(profile);
+    renderChart(chart);
+  }
 });
 
 const options = {
@@ -128,11 +141,11 @@ function shade(arr) {
 function renderChart(result) {
   let labels = [];
   let prices = [];
-  result.data.forEach((item) => {
-    labels.unshift(item.date);
+  result.data.date.forEach((item) => {
+    labels.unshift(item);
   });
-  result.data.forEach((item) => {
-    prices.unshift(item.close);
+  result.data.price.forEach((item) => {
+    prices.unshift(item);
   });
 
   const ctx = $("#myChart");
@@ -162,9 +175,13 @@ function renderCompanyProfile(profile) {
 
   $(".card-header").append(`
     <div class="company-container">
-      <div class="d-flex">
-        <img src='${company.image}' class='mx-4 img-logo' />
-        <h3 class='mx-4 text-center'>${company.companyName}<br />${company.symbol} - ${company.exchangeShortName}</h3>
+      <div class="company-title">
+        <img src='${company.image}' class='img-logo' />
+        <div class='follow'>
+          <h3>${company.companyName}</h3>
+          <p>${company.symbol} - ${company.exchangeShortName}<p>
+          <button class='${company.symbol}' id='follow-btn'>Follow</button>
+        </div>
       </div>
     </div>
   `);
@@ -286,3 +303,15 @@ function renderCompanyProfile(profile) {
     `);
   });
 }
+
+$(() => {
+  $(document).on("click", "#follow-btn", function (e) {
+    let symbol = {
+      value: e.target.classList[0],
+    };
+    axios
+      .post(`/add/following`, symbol)
+      .then((res) => alert(`${symbol.value} ${res.data.msg}`))
+      .catch((err) => console.log(err));
+  });
+});

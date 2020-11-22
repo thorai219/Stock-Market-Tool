@@ -60,19 +60,6 @@ def get_jsonparsed_data(url):
     data = response.read().decode("utf-8")
     return json.loads(data)
 
-def query_db_for_symbol(term):
-
-    query = db.session.query(Company.symbol).filter(or_(
-        Company.name.ilike("%" + term + "%"),
-        Company.name == term,
-        Company.symbol == term
-    ))
-
-    res = [cn[0] for cn in query.all()]
-    symbol = str(res[0]).strip("[' ']")
-
-    return symbol
-
 def get_movers():
 
     actives_url = (f"{STOCK_API_URL}actives?apikey={STOCK_API_KEY}")
@@ -171,12 +158,14 @@ def nasdaq():
 @app.route("/search")
 def auto_complete_search():
 
-    term = request.args.get("q")
-    query = db.session.query(Company.name).filter(or_(
-                Company.name.ilike("%" + str(term) + "%"),
-                Company.name == str(term),
-            )).limit(5)
-    results = [cn[0] for cn in query.all()]
+    term = request.args.get("q").upper()
+    url = (f"{STOCK_API_URL}search?query={term}&limit=5&apikey={STOCK_API_KEY}")
+    data = get_jsonparsed_data(url)
+    
+    results = []
+
+    for item in data:
+        results.append((f'{item["symbol"]} - {item["name"]}'))
 
     return jsonify(matching_results = results)
 
@@ -186,11 +175,7 @@ def get_profile():
     if not g.user:
         return redirect('/login')
 
-    name = request.json['value']
-
-    if name == '':
-        return render_template('404.html')
-    ticker = query_db_for_symbol(name)
+    ticker = request.json['value']
 
     profile = {}
     profile["company"] = get_company_profile(ticker)
@@ -207,30 +192,44 @@ def get_company_info():
 
     name = request.json['value']
 
-    if name == '':
-        return render_template('404.html')
-    ticker = query_db_for_symbol(name)
-
-    chart_url = (f"{STOCK_API_URL}historical-chart/1min/{ticker}?apikey={STOCK_API_KEY}")
+    chart_url = (f"{STOCK_API_URL}historical-chart/1min/{name}?apikey={STOCK_API_KEY}")
     chart = get_jsonparsed_data(chart_url)
 
+    date = []
+    price = []
 
-    return make_response(jsonify(chart))
-    
-@app.route("/add/following/<symbol>")
-def add_to_following(symbol):
+    for item in chart:
+        date.append(item["date"])
+        price.append(item["close"])
+
+    chart_data = {}
+    chart_data["date"] = date
+    chart_data["price"] = price
+
+    return make_response(jsonify(chart_data))
+
+@app.route("/add/following", methods=["POST"])
+def add_to_following():
 
     if not g.user:
         return redirect('/')
 
-    following = Following(
-        user_id=g.user.id,
-        company_symbol=symbol
-    )
-    db.session.add(following)
-    db.session.commit()
+    symbol = request.json['value']
 
-    return redirect("/")
+    query = db.session.query(Following.company_symbol).filter(Following.company_symbol==symbol)
+    results = [symbol[0] for symbol in query.all()]
+
+    if len(results) > 0:
+        return make_response(jsonify({"msg": "already following!"}))
+    else:
+        following = Following(
+            user_id=g.user.id,
+            company_symbol=symbol
+        )
+        db.session.add(following)
+        db.session.commit()
+
+        return make_response(jsonify({"msg": "Added to your watchlist"}))
 
 @app.route("/long/polling/snp")
 def snp_long_polling():
@@ -269,7 +268,7 @@ def signup():
             )
             db.session.commit()
 
-        except IntegrityError as e:
+        except IntegrityError:
             flash("Username already taken", 'danger')
             return render_template('user/signup.html', form=form)
 
@@ -329,14 +328,17 @@ def show_gainers():
 @app.route("/")
 def homepage():
 
+    if not g.user:
+        return render_template('/user/welcome.html')
+
     gainer_obj = get_gainers()
     losers_obj = get_losers()
-    snp()
-
+    
     return render_template(
         "/user/home.html",
         news=get_headline_news(),
         marquee=get_movers(),
+        user=g.user,
         gainers=gainer_obj[0:10],
         losers=losers_obj[0:10],
         snp=snp(),
@@ -344,3 +346,61 @@ def homepage():
         nasdaq=nasdaq(),
         sector=sector_performance()
     )
+
+@app.route("/watchlist")
+def watchlist():
+
+    query = db.session.query(Following.company_symbol).filter(Following.user_id==g.user.id)
+    results = [symbol[0] for symbol in query.all()]
+
+    watchlist = []
+
+    for ticker in results:
+        url = (f"{STOCK_API_URL}quote-short/{ticker}?apikey={STOCK_API_KEY}")
+        watchlist.append(get_jsonparsed_data(url))
+
+    
+    return render_template("/user/watchlist.html", watchlist=watchlist, user=g.user)
+
+
+@app.route("/profile", methods=["GET", "POST"])
+def profile():
+
+    if not g.user:
+        return redirect("/login")
+
+    form = SignUpForm(obj=g.user)
+
+    if form.validate_on_submit():
+        if User.authenticate(g.user.username, form.password.data):
+            g.user.username = form.username.data
+            g.user.email = form.email.data
+            g.user.fullname = form.fullname.data
+
+            db.session.commit()
+
+            flash('Successfully updated information.', "success")
+            return redirect("")
+        flash("Re-enter password to complete changes.", 'danger')
+
+    return render_template('/user/profile.html', form=form)
+
+@app.route("/delete/profile", methods=["POST"])
+def delete_user():
+
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+    else:
+        do_logout()
+
+        db.session.delete(g.user)
+        db.session.commit()
+
+        flash("Account deleted!", "success")
+        return redirect("/signup")
+
+@app.route("/404")
+def show_404():
+
+    return render_template("/404.html")

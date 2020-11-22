@@ -17,7 +17,7 @@
   </ul>
 </div>
 
-<div class="container" id="chart">
+<div class="container chart">
   <div class="d-flex justify-content-around row mt-4 major-index">
 
     <div class='card col-md-4'>
@@ -188,13 +188,13 @@
     });
   }
 
-  $(document).ready(function () {
+  $("home.html").ready(function () {
     setTimeout(fetchSNP, 1000);
     setTimeout(fetchDOW, 1000)
     setTimeout(fetchNasdaq, 1000)
   })
 
-  $(document).ready(function () {
+  $("home.html").ready(function () {
     setInterval(fetchSNP, 60000);
     setInterval(fetchDOW, 60000);
     setInterval(fetchNasdaq, 60000);
