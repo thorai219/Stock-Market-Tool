@@ -247,7 +247,7 @@ def dow_long_polling():
 def nasdaq_long_polling():
 
     return nasdaq()
-*
+
 #########################################
 # USER SIGNUP/LOGIN
 
