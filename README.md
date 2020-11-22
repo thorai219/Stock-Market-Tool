@@ -1,23 +1,26 @@
-<h1 align="center">Stock</h1>
-<div align="center">
-  ## Overview
+# Stock chart and data
 
-  - Conveniently get access to information about a particular company
-  - Historical charts: visual representation allows for easier identification of common and rare price patterns.
-  - Charts are the best way to illustrate recurrence of price patterns.
+This app was created for Springboard fullstack career track capstone 1 project
+Search for a company and get stock chart and financial information.
+Get current financial news, add company to watchlist.
+login/logout, edit profile. The three major indexes quotes are updated every minute.
 
-  <hr>
-  ![Picture1](https://github.com/thorai219/Stock-Market-Tool/blob/media/Oyster.png)
-  - chart screenshots coming soon!
-  <a href="https://stockchartandnews.herokuapp.com/news" target="_blank">Working Demo</a>
+## Picture Of The App
 
-  <hr>
-  
-  ## Built With
+![Picture1](static/img/pic1.png) ![Picture2](static/img/pic2.png)
 
-  - [Python](https://www.python.org/)
-  - [PostGres](https://www.postgresql.org/)
+## User Flow
 
-  Flask | Jquery | Javascript | Axios | Chart.js | Bcrypt | WTForms | SQLAlchemy
-  <hr>
-</div>
+- Users can get quick look at active stocks on the marquee, also gainers and losers.
+- Users can search for a company and get relevant information.
+- Users can get access to current financial news.
+- Users can add companies to watchlist.
+
+## Tools Used
+
+- Flask (Python)
+- PostgreSQL
+- SQLAlchemy
+- jQuery/Bootstrap
+- Axios
+- Bcrypt
